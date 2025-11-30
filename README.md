@@ -92,7 +92,7 @@ $$\text{Expected Playtime} = a + b \cdot \text{PP} + c \cdot \text{PP}^2$$
 ## Usage
 
 1. Install the extension
-2. Visit any osu! player profile (e.g., `https://osu.ppy.sh/users/12345`)
+2. Visit any osu! player profile (e.g. [Me](https://osu.ppy.sh/users/14893688))
 3. The II value appears next to Medals, PP, and Total Play Time
 4. Hover over the value to see the legend
 5. Click the extension icon to access the calculator
