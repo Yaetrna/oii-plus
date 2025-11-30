@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>An ML-powered browser extension that displays your improvement speed on osu! player profiles.</strong>
+  <strong>A browser extension that displays the improvement speed of a player on their osu! profile.</strong>
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@
 
 ## What is the Improvement Indicator?
 
-The **Improvement Indicator (II)** is a metric that compares your improvement speed to the average osu! player. It answers the question: *"Am I improving faster or slower than most players?"*
+The **Improvement Indicator (II)** is a metric that compares your improvement speed to the average osu! player.
 
 Trained on 250,000+ players using machine learning.
 
@@ -35,19 +35,13 @@ Trained on 250,000+ players using machine learning.
 
 ## Installation
 
-### Firefox
+### Firefox (Development)
 
-1. Download the latest release from [Releases](https://github.com/Yaetrna/oii-plus/releases)
-2. Open Firefox and go to `about:addons`
-3. Click the gear icon, then "Install Add-on From File..."
-4. Select the downloaded `.xpi` file
-
-For development:
 1. Go to `about:debugging#/runtime/this-firefox`
 2. Click "Load Temporary Add-on"
 3. Select the `manifest.json` file
 
-### Chrome / Edge / Brave
+### Chromium
 
 1. Download and unzip the latest release
 2. Go to `chrome://extensions/` (or `edge://extensions/`)
@@ -60,11 +54,9 @@ For development:
 ## Features
 
 - Automatic II display on any osu! profile
-- Supports all game modes (osu!, taiko, catch, mania)
-- Color-coded values for quick interpretation
+- ~~Supports all game modes (osu!, taiko, catch, mania)~~ v2 for osu! fallback for the other gamemodes.
 - Calculator for untracked playtime and goal PP prediction
-- Hover tooltip with explanation
-- Works on Firefox, Chrome, Edge, and Brave
+- Should work on Firefox, Chrome, Edge, and Brave (didn't check Chromium based browsers yet)
 
 ---
 
