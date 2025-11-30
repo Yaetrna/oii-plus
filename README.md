@@ -93,10 +93,6 @@ This model achieves **98% accuracy ($R^2$)** because Total Hits directly measure
 
 If Total Hits isn't available, the extension falls back to a PP-based quadratic model:
 
-```
-Expected Playtime = a + b × PP + c × PP²
-```
-
 $$
   Expected Playtime = a + b \times \text{PP} + c \times \text{PP}^2
 $$
