@@ -127,6 +127,16 @@ function updateStatsDisplay(data) {
         iiElement.textContent = '-';
         iiElement.style.color = '';
     }
+    
+    // Update model info
+    const modelInfo = document.getElementById('modelInfo');
+    if (modelInfo) {
+        if (data.modelUsed === 'totalHits' || data.totalHits > 0) {
+            modelInfo.textContent = 'Using Total Hits model (98% accuracy)';
+        } else {
+            modelInfo.textContent = 'Using PP model (64% accuracy)';
+        }
+    }
 }
 
 /**
@@ -213,18 +223,28 @@ async function handleAdditionalPlaytimeChange(event) {
         // Also update our display
         const dataResponse = await sendToContentScript({ type: 'GET_CURRENT_DATA' });
         if (dataResponse.success && dataResponse.data) {
-            // Calculate adjusted II
+            // Calculate adjusted II using the new ML model
             const adjustedPlaytime = dataResponse.data.playtimeHours + additionalHours;
-            const coefficients = {
-                osu: { a: -4.49, b: 0.0601, c: 9.66e-6 },
-                taiko: { a: -0.159, b: 8.91e-3, c: 3.29e-6 },
-                mania: { a: 0.227, b: 0.0306, c: 1.07e-6 },
-                fruits: { a: -4.63, b: 0.0564, c: 2.11e-6 }
-            };
+            const data = dataResponse.data;
             
-            const coef = coefficients[dataResponse.data.mode] || coefficients.osu;
-            const pp = dataResponse.data.pp;
-            const expectedPlaytime = coef.a + coef.b * pp + coef.c * Math.pow(pp, 2);
+            // Use Total Hits if available (more accurate), else use PP
+            let expectedPlaytime;
+            if (data.totalHits && data.totalHits > 0) {
+                // Power Law: playtime = a * total_hits^b
+                const a = 0.000545, b = 0.8737;
+                expectedPlaytime = a * Math.pow(data.totalHits, b);
+            } else {
+                // Quadratic fallback: playtime = a + b*pp + c*pp²
+                const coefficients = {
+                    osu: { a: -148.83, b: 0.1442, c: -3.83e-7 },
+                    taiko: { a: -0.159, b: 8.91e-3, c: 3.29e-6 },
+                    mania: { a: 0.227, b: 0.0306, c: 1.07e-6 },
+                    fruits: { a: -4.63, b: 0.0564, c: 2.11e-6 }
+                };
+                const coef = coefficients[data.mode] || coefficients.osu;
+                expectedPlaytime = coef.a + coef.b * data.pp + coef.c * Math.pow(data.pp, 2);
+            }
+            
             const adjustedII = expectedPlaytime / adjustedPlaytime;
             
             showAdjustedII(

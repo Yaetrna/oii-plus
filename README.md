@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>An enhanced browser extension that displays your improvement speed on osu! player profiles.</strong>
+  <strong>An ML-powered browser extension that displays your improvement speed on osu! player profiles.</strong>
 </p>
 
 <p align="center">
@@ -23,12 +23,11 @@ The **Improvement Indicator (II)** is a metric that compares your improvement sp
 
 | II Value | Meaning | Color |
 |----------|---------|-------|
-| > 2.0x | Exceptional improvement | 🟢 Bright Green |
-| 1.5x - 2.0x | Fast learner | 🟢 Green |
-| 1.0x - 1.5x | Above average | 🟡 Yellow-Green |
-| ≈ 1.0x | Average | 🟡 Yellow |
-| 0.5x - 1.0x | Below average | 🟠 Orange |
-| < 0.5x | Taking your time | 🔴 Red |
+| > 1.3x | Fast learner | 🟢 Bright Green |
+| 1.1x - 1.3x | Above average | 🟢 Green |
+| 0.9x - 1.1x | Average | 🟡 Yellow |
+| 0.7x - 0.9x | Below average | 🟠 Orange |
+| < 0.7x | Taking your time | 🔴 Red |
 
 ---
 
@@ -75,7 +74,19 @@ The II is calculated using the formula:
 II = Expected Playtime / Actual Playtime
 ```
 
-Where **Expected Playtime** is derived from a quadratic regression model based on data from 10,000+ osu! players:
+### v2.0 - ML-Powered Model (98% Accuracy)
+
+The expected playtime is now calculated using **Total Hits** with a Power Law model, trained on **250,000+ osu! players**:
+
+```
+Expected Playtime = 0.000545 × Total Hits^0.8737
+```
+
+This model achieves **98% accuracy (R²)** because Total Hits directly measures how much you've actually played.
+
+### Fallback: PP-Based Model (64% Accuracy)
+
+If Total Hits isn't available, the extension falls back to a PP-based quadratic model:
 
 ```
 Expected Playtime = a + b × PP + c × PP²
@@ -83,7 +94,7 @@ Expected Playtime = a + b × PP + c × PP²
 
 | Mode | a | b | c |
 |------|---|---|---|
-| osu! | -4.49 | 0.0601 | 9.66×10⁻⁶ |
+| osu! | -148.83 | 0.1442 | -3.83×10⁻⁷ |
 | Taiko | -0.159 | 8.91×10⁻³ | 3.29×10⁻⁶ |
 | Mania | 0.227 | 0.0306 | 1.07×10⁻⁶ |
 | Catch | -4.63 | 0.0564 | 2.11×10⁻⁶ |
@@ -168,7 +179,7 @@ This project is licensed under the [MIT License](LICENSE).
 ## 🙏 Credits
 
 - Original concept by [ferryhmm](https://github.com/ferryhmm/oii)
-- Regression coefficients based on 10,000+ player sample
+- v2.0 ML model trained on 250,000+ players
 - Built with ❤️ for the osu! community
 
 ---

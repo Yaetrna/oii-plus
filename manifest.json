@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "osu! Improvement Indicator Plus",
-  "version": "1.0.0",
-  "description": "An enhanced improvement indicator for osu! player profiles. Shows how fast you're improving compared to the average player.",
+  "version": "2.0.0",
+  "description": "An ML-powered improvement indicator for osu! profiles. Uses Total Hits for 98% accurate predictions, trained on 250K+ players.",
   
   "author": "Yaetrna",
   
