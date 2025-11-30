@@ -19,15 +19,16 @@
 
 ## 📖 What is the Improvement Indicator?
 
-The **Improvement Indicator (II)** is a metric that compares your improvement speed to the average osu! player. It answers the question: *"Am I improving faster or slower than most players?"*
+The **Improvement Indicator (II)** is a metric that compares your improvement speed to the average osu! player.
+Sampled from 250016 players and trained on a ML-Algorithm that compares the improvement speed of an individual with (almost) everyone else.
 
-| II Value | Meaning | Color |
-|----------|---------|-------|
-| > 1.3x | Fast learner | 🟢 Bright Green |
-| 1.1x - 1.3x | Above average | 🟢 Green |
-| 0.9x - 1.1x | Average | 🟡 Yellow |
-| 0.7x - 0.9x | Below average | 🟠 Orange |
-| < 0.7x | Taking your time | 🔴 Red |
+| II Value      | Meaning            | $\sigma$                              | % of Players |
+|---------------|--------------------|---------------------------------------|--------------|
+| > 1.21x       | Exceptionally fast | $> +1.5 \sigma$                       | Top 7%       |
+| 1.07x - 1.21x | Above average      | $+0.5 \sigma \text{ to } +1.5 \sigma$ | Top 7-31%    |
+| 0.94x - 1.07x | Average            | $\pm 0.5 \sigma$                      | Middle 38%   |
+| 0.81x - 0.94x | Below average      | $-0.5 \sigma \text{ to } -1.5 \sigma$ | Bottom 7-31% |
+| < 0.81x       | Exceptionally slow | $< -1.5 \sigma$                       | Bottom 7%    |
 
 ---
 
