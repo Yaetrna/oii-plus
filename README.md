@@ -101,12 +101,12 @@ $$
   Expected Playtime = a + b \times \text{PP} + c \times \text{PP}^2
 $$
 
-| Mode  | a       | b         | c          |
-|-------|---------|-----------|------------|
-| osu!  | -148.83 | 0.1442    | -3.83×10⁻⁷ |
-| Taiko | -0.159  | 8.91×10⁻³ | 3.29×10⁻⁶  |
-| Mania | 0.227   | 0.0306    | 1.07×10⁻⁶  |
-| Catch | -4.63   | 0.0564    | 2.11×10⁻⁶  |
+| Mode  | a         | b                     | c                      |
+|-------|-----------|-----------------------|------------------------|
+| osu!  | $-148.83$ | $0.1442$              | $-3.83 \times 10^{-7}$ |
+| Taiko | $-0.159$  | $8.91 \times 10^{-3}$ | $3.29 \times 10^{-6}$  |
+| Mania | $0.227$   | $0.0306$              | $1.07 \times 10^{-6}$  |
+| Catch | $-4.63$   | $0.0564$              | $2.11 \times 10^{-6}$  |
 
 ---
 
@@ -167,25 +167,25 @@ zip -r ../oii-plus-chrome.zip . -x "*.git*" -x "*.htm*"
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Please:
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing`)
+2. Create a feature branch (`git checkout -b feature/[FEATURE NAME]`)
+3. Commit changes (`git commit -m 'Add [FEATURE NAME]'`)
+4. Push to branch (`git push origin feature/[FEATURE NAME]`)
 5. Open a Pull Request
 
 ---
 
-## 📜 License
+## License
 
 This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-## 🙏 Credits
+## Credits
 
 - Original concept by [ferryhmm](https://github.com/ferryhmm/oii)
 - v2.0 ML model trained on 250,000+ players
