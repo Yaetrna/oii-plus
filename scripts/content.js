@@ -123,14 +123,22 @@ function predictPlaytimeForGoal(currentStats, goalPP, currentPlaytimeHours, mode
     return expectedPlaytimeForGoal / currentII;
 }
 
+/**
+ * Get color for II value based on sigma intervals from 250K player distribution:
+ * Mean = 1.007, Std = 0.133
+ * > 1.20x (> +1.5σ): Bright Green - Top 7%
+ * 1.07x - 1.20x (+0.5σ to +1.5σ): Green - Top 31%
+ * 0.94x - 1.07x (±0.5σ): Yellow - Middle 38%
+ * 0.80x - 0.94x (-0.5σ to -1.5σ): Orange - Bottom 31%
+ * < 0.80x (< -1.5σ): Red - Bottom 7%
+ */
 function getIIColor(ii) {
     if (ii <= 0) return '#888888';
-    if (ii >= 2) return 'hsl(120, 100%, 45%)';
-    if (ii >= 1) {
-        const ratio = (ii - 1) / 1;
-        return `hsl(${60 + ratio * 60}, 100%, ${50 - ratio * 5}%)`;
-    }
-    return `hsl(${ii * 60}, 100%, 50%)`;
+    if (ii >= 1.20) return 'hsl(120, 100%, 45%)';  // Bright green - exceptionally fast
+    if (ii >= 1.07) return 'hsl(90, 100%, 50%)';   // Green - above average
+    if (ii >= 0.94) return 'hsl(60, 100%, 50%)';   // Yellow - average
+    if (ii >= 0.80) return 'hsl(30, 100%, 50%)';   // Orange - below average
+    return 'hsl(0, 100%, 50%)';                     // Red - taking your time
 }
 
 function formatPlaytime(hours) {
@@ -375,19 +383,46 @@ function createIIElement(ii, stats, playtimeHours) {
     valueDiv.style.cursor = 'help';
     valueDiv.textContent = iiValue;
     
-    // Custom tooltip
+    // Custom tooltip (built safely without innerHTML)
     const tooltip = document.createElement('div');
     tooltip.className = 'oii-tooltip';
-    tooltip.innerHTML = `
-        <div class="oii-tooltip__title">Improvement Indicator</div>
-        <div class="oii-tooltip__desc">Compares your improvement speed to the average player.</div>
-        <div class="oii-tooltip__legend">
-            <div class="oii-tooltip__legend-item"><span class="oii-tooltip__legend-icon--up">▲</span> Above 1.0x → Faster than average</div>
-            <div class="oii-tooltip__legend-item"><span class="oii-tooltip__legend-icon--mid">●</span> Equal 1.0x → Average</div>
-            <div class="oii-tooltip__legend-item"><span class="oii-tooltip__legend-icon--down">▼</span> Below 1.0x → Slower than average</div>
-        </div>
-        <div style="margin-top: 8px; font-size: 10px; opacity: 0.7;">Model: ${modelUsed}</div>
-    `;
+    
+    const title = document.createElement('div');
+    title.className = 'oii-tooltip__title';
+    title.textContent = 'Improvement Indicator';
+    
+    const desc = document.createElement('div');
+    desc.className = 'oii-tooltip__desc';
+    desc.textContent = 'Compares your improvement speed to the average player.';
+    
+    const legend = document.createElement('div');
+    legend.className = 'oii-tooltip__legend';
+    
+    const legendItems = [
+        { icon: '▲', iconClass: 'oii-tooltip__legend-icon--up', text: 'Above 1.0x → Faster than average' },
+        { icon: '●', iconClass: 'oii-tooltip__legend-icon--mid', text: 'Equal 1.0x → Average' },
+        { icon: '▼', iconClass: 'oii-tooltip__legend-icon--down', text: 'Below 1.0x → Slower than average' }
+    ];
+    
+    legendItems.forEach(item => {
+        const legendItem = document.createElement('div');
+        legendItem.className = 'oii-tooltip__legend-item';
+        const iconSpan = document.createElement('span');
+        iconSpan.className = item.iconClass;
+        iconSpan.textContent = item.icon;
+        legendItem.appendChild(iconSpan);
+        legendItem.appendChild(document.createTextNode(' ' + item.text));
+        legend.appendChild(legendItem);
+    });
+    
+    const modelDiv = document.createElement('div');
+    modelDiv.style.cssText = 'margin-top: 8px; font-size: 10px; opacity: 0.7;';
+    modelDiv.textContent = 'Model: ' + modelUsed;
+    
+    tooltip.appendChild(title);
+    tooltip.appendChild(desc);
+    tooltip.appendChild(legend);
+    tooltip.appendChild(modelDiv);
     
     container.appendChild(labelDiv);
     container.appendChild(valueDiv);
