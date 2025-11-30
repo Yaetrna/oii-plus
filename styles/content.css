@@ -1,0 +1,161 @@
+/**
+ * osu! Improvement Indicator Plus - Content Styles
+ * 
+ * These styles are injected into osu.ppy.sh pages to style the II element.
+ * We use the same design language as the osu! website for seamless integration.
+ */
+
+/* ============================================================
+   II VALUE STYLING
+   ============================================================ */
+
+.oii-element {
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.oii-element:hover {
+    transform: translateY(-2px);
+}
+
+.oii-value-container {
+    position: relative;
+    cursor: help;
+}
+
+.oii-value {
+    font-weight: 700;
+    font-size: 1.1em;
+    transition: all 0.3s ease;
+    text-shadow: 0 0 10px currentColor;
+}
+
+.oii-value:hover {
+    filter: brightness(1.2);
+}
+
+/* ============================================================
+   TOOLTIP STYLING
+   ============================================================ */
+
+.oii-tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    
+    width: 280px;
+    padding: 12px 16px;
+    
+    background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+    border: 1px solid rgba(255, 102, 171, 0.3);
+    border-radius: 8px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-50%) translateY(10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    z-index: 1000;
+    pointer-events: none;
+    
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+    color: #fff;
+}
+
+.oii-value-container:hover .oii-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Tooltip arrow */
+.oii-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    border: 8px solid transparent;
+    border-top-color: #1a1a1a;
+}
+
+.oii-tooltip-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ff66ab;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 102, 171, 0.2);
+}
+
+.oii-tooltip-content p {
+    margin: 0 0 8px 0;
+    color: #ccc;
+}
+
+.oii-tooltip-content ul {
+    margin: 8px 0;
+    padding-left: 16px;
+    color: #aaa;
+}
+
+.oii-tooltip-content li {
+    margin: 4px 0;
+}
+
+.oii-tooltip-content strong {
+    color: #fff;
+}
+
+.oii-tooltip-formula {
+    margin-top: 12px !important;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 11px;
+    color: #88c0d0 !important;
+    text-align: center;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes oii-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.oii-element.loading .oii-value {
+    animation: oii-pulse 1.5s ease-in-out infinite;
+    color: #888 !important;
+}
+
+/* ============================================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================================ */
+
+@media (max-width: 900px) {
+    .oii-tooltip {
+        width: 240px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 600px) {
+    .oii-tooltip {
+        display: none;
+    }
+}
