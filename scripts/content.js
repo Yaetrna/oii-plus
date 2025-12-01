@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 let currentUserData = null;
 let isInjecting = false;
@@ -7,11 +7,18 @@ async function injectII(additionalPlaytimeHours = 0, forceRecreate = false) {
   if (isInjecting) return;
 
   oiiUI.addStyles();
-  const existingElement = document.getElementById(oiiConfig.elementIds.iiElement);
+  const existingElement = document.getElementById(
+    oiiConfig.elementIds.iiElement
+  );
 
   if (!forceRecreate && currentUserData && existingElement) {
-    const playtimeHours = currentUserData.playtimeHours + additionalPlaytimeHours;
-    const ii = oiiCalculator.calculateII(currentUserData.totalHits, playtimeHours, currentUserData.mode);
+    const playtimeHours =
+      currentUserData.playtimeHours + additionalPlaytimeHours;
+    const ii = oiiCalculator.calculateII(
+      currentUserData.totalHits,
+      playtimeHours,
+      currentUserData.mode
+    );
     currentUserData.ii = ii;
     if (oiiUI.updateElement(ii, playtimeHours)) return;
   }
@@ -20,20 +27,31 @@ async function injectII(additionalPlaytimeHours = 0, forceRecreate = false) {
 
   try {
     oiiUI.removeExisting();
-    if (!currentUserData) await new Promise(r => setTimeout(r, oiiConfig.timing.initialDelay));
+    if (!currentUserData)
+      await new Promise((r) => setTimeout(r, oiiConfig.timing.initialDelay));
 
     let userData = oiiDataExtractor.getData();
     if (!userData) {
-      await new Promise(r => setTimeout(r, oiiConfig.timing.retryDelay));
+      await new Promise((r) => setTimeout(r, oiiConfig.timing.retryDelay));
       userData = oiiDataExtractor.getData();
     }
     if (!userData) return;
 
-    const playtimeHours = (userData.playTimeSeconds / 3600) + additionalPlaytimeHours;
+    const playtimeHours =
+      userData.playTimeSeconds / 3600 + additionalPlaytimeHours;
     const totalHits = userData.totalHits || 0;
-    const ii = oiiCalculator.calculateII(totalHits, playtimeHours, userData.mode);
+    const ii = oiiCalculator.calculateII(
+      totalHits,
+      playtimeHours,
+      userData.mode
+    );
 
-    currentUserData = { ...userData, playtimeHours: userData.playTimeSeconds / 3600, additionalPlaytimeHours, ii };
+    currentUserData = {
+      ...userData,
+      playtimeHours: userData.playTimeSeconds / 3600,
+      additionalPlaytimeHours,
+      ii,
+    };
 
     oiiUI.removeExisting();
     const iiElement = oiiUI.createElement(ii, playtimeHours);
@@ -42,7 +60,7 @@ async function injectII(additionalPlaytimeHours = 0, forceRecreate = false) {
     if (injection) {
       injection.element.appendChild(iiElement);
     } else {
-      iiElement.classList.add('oii-floating');
+      iiElement.classList.add("oii-floating");
       document.body.appendChild(iiElement);
     }
   } finally {
@@ -53,41 +71,59 @@ async function injectII(additionalPlaytimeHours = 0, forceRecreate = false) {
 function setupMessageHandlers() {
   if (!oiiBrowserAPI?.runtime) return;
 
-  oiiBrowserAPI.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    switch (request.type) {
-      case 'UPDATE_PLAYTIME':
-        injectII(Number(request.additionalPlaytimeHours));
-        sendResponse({ success: true });
-        break;
+  oiiBrowserAPI.runtime.onMessage.addListener(
+    (request, sender, sendResponse) => {
+      switch (request.type) {
+        case "UPDATE_PLAYTIME":
+          injectII(Number(request.additionalPlaytimeHours));
+          sendResponse({ success: true });
+          break;
 
-      case 'GET_PREDICTION':
-        if (currentUserData) {
-          const playtimeHours = currentUserData.playtimeHours + (request.additionalPlaytimeHours || 0);
-          const totalHits = currentUserData.totalHits || 0;
-          sendResponse({
-            success: true,
-            prediction: oiiCalculator.predictPlaytimeForGoal(totalHits, currentUserData.pp, Number(request.goalPP), playtimeHours, currentUserData.mode),
-            currentII: oiiCalculator.calculateII(totalHits, playtimeHours, currentUserData.mode)
-          });
-        }
-        break;
-
-      case 'GET_CURRENT_DATA':
-        sendResponse(currentUserData ? {
-          success: true,
-          data: {
-            username: currentUserData.username,
-            pp: currentUserData.pp,
-            totalHits: currentUserData.totalHits || 0,
-            playtimeHours: currentUserData.playtimeHours,
-            mode: currentUserData.mode,
-            ii: currentUserData.ii
+        case "GET_PREDICTION":
+          if (currentUserData) {
+            const playtimeHours =
+              currentUserData.playtimeHours +
+              (request.additionalPlaytimeHours || 0);
+            const totalHits = currentUserData.totalHits || 0;
+            sendResponse({
+              success: true,
+              prediction: oiiCalculator.predictPlaytimeForGoal(
+                totalHits,
+                currentUserData.pp,
+                Number(request.goalPP),
+                playtimeHours,
+                currentUserData.mode
+              ),
+              currentII: oiiCalculator.calculateII(
+                totalHits,
+                playtimeHours,
+                currentUserData.mode
+              ),
+            });
           }
-        } : { success: false, error: 'No data' });
-        break;
+          break;
+
+        case "GET_CURRENT_DATA":
+          sendResponse(
+            currentUserData
+              ? {
+                  success: true,
+                  data: {
+                    username: currentUserData.username,
+                    pp: currentUserData.pp,
+                    totalHits: currentUserData.totalHits || 0,
+                    playtimeHours: currentUserData.playtimeHours,
+                    mode: currentUserData.mode,
+                    ii: currentUserData.ii,
+                  },
+                }
+              : { success: false, error: "No data" }
+          );
+          break;
+      }
+      return true;
     }
-    return true;
-  });
+  );
 }
 
 function init() {
@@ -96,7 +132,7 @@ function init() {
 }
 
 function setupNavigationObservers() {
-  document.addEventListener('turbo:load', () => {
+  document.addEventListener("turbo:load", () => {
     if (/\/users\/\d+/.test(location.href)) {
       setTimeout(() => injectII(0), oiiConfig.timing.navigationDelay);
     }
@@ -116,8 +152,8 @@ function setupNavigationObservers() {
 setupMessageHandlers();
 setupNavigationObservers();
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
 } else {
   init();
 }

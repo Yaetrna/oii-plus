@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 const oiiCalculator = {
   expectedPlaytime(totalHits, mode) {
@@ -12,7 +12,13 @@ const oiiCalculator = {
     return this.expectedPlaytime(totalHits, mode) / playtimeHours;
   },
 
-  predictPlaytimeForGoal(totalHits, currentPP, goalPP, currentPlaytimeHours, mode) {
+  predictPlaytimeForGoal(
+    totalHits,
+    currentPP,
+    goalPP,
+    currentPlaytimeHours,
+    mode
+  ) {
     if (currentPlaytimeHours <= 0 || totalHits <= 0) return Infinity;
     const currentII = this.calculateII(totalHits, currentPlaytimeHours, mode);
     if (currentII <= 0) return Infinity;
@@ -22,11 +28,11 @@ const oiiCalculator = {
   },
 
   getColor(ii) {
-    if (ii <= 0) return '#888';
-    if (ii >= 1.20) return 'hsl(120, 100%, 45%)';
-    if (ii >= 1.07) return 'hsl(90, 100%, 50%)';
-    if (ii >= 0.94) return 'hsl(60, 100%, 50%)';
-    if (ii >= 0.80) return 'hsl(30, 100%, 50%)';
-    return 'hsl(0, 100%, 50%)';
-  }
+    if (ii <= 0) return "#888";
+    if (ii >= 1.2) return "hsl(120, 100%, 45%)";
+    if (ii >= 1.07) return "hsl(90, 100%, 50%)";
+    if (ii >= 0.94) return "hsl(60, 100%, 50%)";
+    if (ii >= 0.8) return "hsl(30, 100%, 50%)";
+    return "hsl(0, 100%, 50%)";
+  },
 };

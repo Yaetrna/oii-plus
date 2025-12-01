@@ -23,13 +23,13 @@ The **Improvement Indicator (II)** is a metric that compares your improvement sp
 
 Trained on 250,000+ players using machine learning.
 
-| II Value | Meaning | $\sigma$ | % of Players |
-|----------|---------|----------|--------------|
-| $> 1.20$ | Exceptionally fast | $> +1.5\sigma$ | Top 7% |
-| $1.07 - 1.20$ | Above average | $+0.5\sigma$ to $+1.5\sigma$ | Top 7-31% |
-| $0.94 - 1.07$ | Average | $\pm 0.5\sigma$ | Middle 38% |
-| $0.80 - 0.94$ | Below average | $-0.5\sigma$ to $-1.5\sigma$ | Bottom 7-31% |
-| $< 0.80$ | Taking your time | $< -1.5\sigma$ | Bottom 7% |
+| II Value      | Meaning            | $\sigma$                     | % of Players |
+| ------------- | ------------------ | ---------------------------- | ------------ |
+| $> 1.20$      | Exceptionally fast | $> +1.5\sigma$               | Top 7%       |
+| $1.07 - 1.20$ | Above average      | $+0.5\sigma$ to $+1.5\sigma$ | Top 7-31%    |
+| $0.94 - 1.07$ | Average            | $\pm 0.5\sigma$              | Middle 38%   |
+| $0.80 - 0.94$ | Below average      | $-0.5\sigma$ to $-1.5\sigma$ | Bottom 7-31% |
+| $< 0.80$      | Taking your time   | $< -1.5\sigma$               | Bottom 7%    |
 
 ---
 
@@ -80,12 +80,12 @@ If Total Hits isn't available, the extension uses a quadratic model:
 
 $$\text{Expected Playtime} = a + b \cdot \text{PP} + c \cdot \text{PP}^2$$
 
-| Mode | $a$ | $b$ | $c$ |
-|------|-----|-----|-----|
-| osu! | $-148.83$ | $0.1442$ | $-3.83 \times 10^{-7}$ |
-| Taiko | $-0.159$ | $8.91 \times 10^{-3}$ | $3.29 \times 10^{-6}$ |
-| Mania | $0.227$ | $0.0306$ | $1.07 \times 10^{-6}$ |
-| Catch | $-4.63$ | $0.0564$ | $2.11 \times 10^{-6}$ |
+| Mode  | $a$       | $b$                   | $c$                    |
+| ----- | --------- | --------------------- | ---------------------- |
+| osu!  | $-148.83$ | $0.1442$              | $-3.83 \times 10^{-7}$ |
+| Taiko | $-0.159$  | $8.91 \times 10^{-3}$ | $3.29 \times 10^{-6}$  |
+| Mania | $0.227$   | $0.0306$              | $1.07 \times 10^{-6}$  |
+| Catch | $-4.63$   | $0.0564$              | $2.11 \times 10^{-6}$  |
 
 ---
 
@@ -131,11 +131,13 @@ cd oii-plus
 ### Building
 
 Firefox:
+
 ```bash
 zip -r oii-plus.xpi . -x "*.git*" -x "*.md"
 ```
 
 Chrome:
+
 ```bash
 zip -r oii-plus.zip . -x "*.git*"
 ```

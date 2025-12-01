@@ -1,8 +1,8 @@
-'use strict';
+"use strict";
 
 const oiiUI = {
   formatPlaytime(hours) {
-    if (!isFinite(hours) || hours < 0) return '∞';
+    if (!isFinite(hours) || hours < 0) return "∞";
     const days = Math.floor(hours / 24);
     const remainingHours = Math.floor(hours % 24);
     const minutes = Math.floor((hours % 1) * 60);
@@ -10,12 +10,12 @@ const oiiUI = {
     if (days > 0) parts.push(`${days}d`);
     if (remainingHours > 0 || days > 0) parts.push(`${remainingHours}h`);
     if (minutes > 0 && days === 0) parts.push(`${minutes}m`);
-    return parts.join(' ') || '0h';
+    return parts.join(" ") || "0h";
   },
 
   addStyles() {
     if (document.getElementById(oiiConfig.elementIds.styles)) return;
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.id = oiiConfig.elementIds.styles;
     style.textContent = `
       .profile-detail__values--grid{grid-template-columns:repeat(5,1fr)!important}
@@ -37,28 +37,40 @@ const oiiUI = {
   },
 
   createTooltip_() {
-    const tooltip = document.createElement('div');
-    tooltip.className = 'oii-tooltip';
+    const tooltip = document.createElement("div");
+    tooltip.className = "oii-tooltip";
 
-    const title = document.createElement('div');
-    title.className = 'oii-tooltip__title';
-    title.textContent = 'Improvement Indicator';
+    const title = document.createElement("div");
+    title.className = "oii-tooltip__title";
+    title.textContent = "Improvement Indicator";
 
-    const desc = document.createElement('div');
-    desc.className = 'oii-tooltip__desc';
-    desc.textContent = 'Compares your improvement speed to the average player.';
+    const desc = document.createElement("div");
+    desc.className = "oii-tooltip__desc";
+    desc.textContent = "Compares your improvement speed to the average player.";
 
-    const legend = document.createElement('div');
-    legend.className = 'oii-tooltip__legend';
+    const legend = document.createElement("div");
+    legend.className = "oii-tooltip__legend";
 
     [
-      { icon: '▲', cls: 'oii-tooltip__legend-icon--up', text: '> 1.0x → Faster than average' },
-      { icon: '●', cls: 'oii-tooltip__legend-icon--mid', text: '= 1.0x → Average' },
-      { icon: '▼', cls: 'oii-tooltip__legend-icon--down', text: '< 1.0x → Slower than average' }
-    ].forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'oii-tooltip__legend-item';
-      const iconSpan = document.createElement('span');
+      {
+        icon: "▲",
+        cls: "oii-tooltip__legend-icon--up",
+        text: "> 1.0x → Faster than average",
+      },
+      {
+        icon: "●",
+        cls: "oii-tooltip__legend-icon--mid",
+        text: "= 1.0x → Average",
+      },
+      {
+        icon: "▼",
+        cls: "oii-tooltip__legend-icon--down",
+        text: "< 1.0x → Slower than average",
+      },
+    ].forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "oii-tooltip__legend-item";
+      const iconSpan = document.createElement("span");
       iconSpan.className = item.cls;
       iconSpan.textContent = item.icon;
       row.appendChild(iconSpan);
@@ -71,19 +83,20 @@ const oiiUI = {
   },
 
   createElement(ii, playtimeHours) {
-    const container = document.createElement('div');
+    const container = document.createElement("div");
     container.id = oiiConfig.elementIds.iiElement;
-    container.className = 'value-display value-display--plain';
+    container.className = "value-display value-display--plain";
 
-    const displayValue = (ii > 0 && playtimeHours > 0) ? `${ii.toFixed(2)}x` : '-';
+    const displayValue =
+      ii > 0 && playtimeHours > 0 ? `${ii.toFixed(2)}x` : "-";
     const color = oiiCalculator.getColor(ii);
 
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'value-display__label';
-    labelDiv.textContent = 'ii';
+    const labelDiv = document.createElement("div");
+    labelDiv.className = "value-display__label";
+    labelDiv.textContent = "ii";
 
-    const valueDiv = document.createElement('div');
-    valueDiv.className = 'value-display__value';
+    const valueDiv = document.createElement("div");
+    valueDiv.className = "value-display__value";
     valueDiv.style.cssText = `color:${color};text-shadow:0 0 10px ${color};cursor:help`;
     valueDiv.textContent = displayValue;
 
@@ -93,10 +106,11 @@ const oiiUI = {
 
   updateElement(ii, playtimeHours) {
     const container = document.getElementById(oiiConfig.elementIds.iiElement);
-    const valueDiv = container?.querySelector('.value-display__value');
+    const valueDiv = container?.querySelector(".value-display__value");
     if (!valueDiv) return false;
 
-    const displayValue = (ii > 0 && playtimeHours > 0) ? `${ii.toFixed(2)}x` : '-';
+    const displayValue =
+      ii > 0 && playtimeHours > 0 ? `${ii.toFixed(2)}x` : "-";
     const color = oiiCalculator.getColor(ii);
     valueDiv.textContent = displayValue;
     valueDiv.style.color = color;
@@ -105,14 +119,20 @@ const oiiUI = {
   },
 
   findInjectionPoint() {
-    for (const selector of ['.profile-detail__values--grid', '.profile-detail__values', '.profile-detail']) {
+    for (const selector of [
+      ".profile-detail__values--grid",
+      ".profile-detail__values",
+      ".profile-detail",
+    ]) {
       const el = document.querySelector(selector);
-      if (el) return { element: el, position: 'append' };
+      if (el) return { element: el, position: "append" };
     }
     return null;
   },
 
   removeExisting() {
-    document.querySelectorAll(`#${oiiConfig.elementIds.iiElement}`).forEach(el => el.remove());
-  }
+    document
+      .querySelectorAll(`#${oiiConfig.elementIds.iiElement}`)
+      .forEach((el) => el.remove());
+  },
 };

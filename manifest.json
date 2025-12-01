@@ -35,21 +35,25 @@
 
   "host_permissions": ["https://osu.ppy.sh/*"],
 
-  "content_scripts": [{
-    "matches": ["https://osu.ppy.sh/users/*"],
-    "js": [
-      "scripts/config.js",
-      "scripts/calculator.js",
-      "scripts/data-extractor.js",
-      "scripts/ui.js",
-      "scripts/content.js"
-    ],
-    "css": ["styles/content.css"],
-    "run_at": "document_end"
-  }],
+  "content_scripts": [
+    {
+      "matches": ["https://osu.ppy.sh/users/*"],
+      "js": [
+        "scripts/config.js",
+        "scripts/calculator.js",
+        "scripts/data-extractor.js",
+        "scripts/ui.js",
+        "scripts/content.js"
+      ],
+      "css": ["styles/content.css"],
+      "run_at": "document_end"
+    }
+  ],
 
-  "web_accessible_resources": [{
-    "resources": ["icons/*"],
-    "matches": ["https://osu.ppy.sh/*"]
-  }]
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*"],
+      "matches": ["https://osu.ppy.sh/*"]
+    }
+  ]
 }

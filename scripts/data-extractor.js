@@ -1,16 +1,18 @@
-'use strict';
+"use strict";
 
 const oiiDataExtractor = {
   getCurrentMode() {
-    const match = location.pathname.match(/\/users\/\d+\/(osu|taiko|fruits|mania)/);
-    return match ? match[1] : 'osu';
+    const match = location.pathname.match(
+      /\/users\/\d+\/(osu|taiko|fruits|mania)/
+    );
+    return match ? match[1] : "osu";
   },
 
   getFromDataAttributes() {
-    const elements = document.querySelectorAll('[data-initial-data]');
+    const elements = document.querySelectorAll("[data-initial-data]");
     for (const el of elements) {
       try {
-        const data = JSON.parse(el.getAttribute('data-initial-data'));
+        const data = JSON.parse(el.getAttribute("data-initial-data"));
         if (!data?.user?.statistics) continue;
         const stats = data.user.statistics;
         return {
@@ -21,20 +23,24 @@ const oiiDataExtractor = {
           accuracy: stats.hit_accuracy || 0,
           rankedScore: stats.ranked_score || 0,
           username: data.user.username,
-          mode: data.current_mode || this.getCurrentMode()
+          mode: data.current_mode || this.getCurrentMode(),
         };
-      } catch { /* continue */ }
+      } catch {
+        /* continue */
+      }
     }
     return null;
   },
 
   parseFromVisibleContent() {
     const titleMatch = document.title.match(/^(.+?)\s*[·|\-]/);
-    const username = titleMatch ? titleMatch[1].trim() : 'Unknown';
+    const username = titleMatch ? titleMatch[1].trim() : "Unknown";
     const pageText = document.body.innerText;
 
     const ppMatch = pageText.match(/pp\s*([0-9,]+)|([0-9,]+)\s*pp/i);
-    const pp = ppMatch ? parseInt((ppMatch[1] || ppMatch[2]).replace(/,/g, '')) : null;
+    const pp = ppMatch
+      ? parseInt((ppMatch[1] || ppMatch[2]).replace(/,/g, ""))
+      : null;
 
     const timeMatch = pageText.match(/(\d+)d\s*(\d+)h\s*(\d+)m/);
     const playTimeSeconds = timeMatch
@@ -44,11 +50,20 @@ const oiiDataExtractor = {
       : null;
 
     const hitsMatch = pageText.match(/Total\s*Hits\s*([0-9,]+)/i);
-    const totalHits = hitsMatch ? parseInt(hitsMatch[1].replace(/,/g, '')) : 0;
+    const totalHits = hitsMatch ? parseInt(hitsMatch[1].replace(/,/g, "")) : 0;
 
     if (!pp || pp <= 0 || !playTimeSeconds || playTimeSeconds <= 0) return null;
 
-    return { pp, playTimeSeconds, totalHits, playCount: 0, accuracy: 0, rankedScore: 0, username, mode: this.getCurrentMode() };
+    return {
+      pp,
+      playTimeSeconds,
+      totalHits,
+      playCount: 0,
+      accuracy: 0,
+      rankedScore: 0,
+      username,
+      mode: this.getCurrentMode(),
+    };
   },
 
   getData() {
@@ -61,8 +76,8 @@ const oiiDataExtractor = {
     while (Date.now() - startTime < maxWaitTime) {
       const data = this.getFromDataAttributes();
       if (data?.pp && data?.playTimeSeconds) return true;
-      await new Promise(r => setTimeout(r, checkInterval));
+      await new Promise((r) => setTimeout(r, checkInterval));
     }
     return false;
-  }
+  },
 };
