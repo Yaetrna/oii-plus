@@ -55,17 +55,17 @@ const oiiUI = {
       {
         icon: "▲",
         cls: "oii-tooltip__legend-icon--up",
-        text: "> 1.0x → Faster than average",
+        text: "> 1.5x → Very Fast / Exceptional",
       },
       {
         icon: "●",
         cls: "oii-tooltip__legend-icon--mid",
-        text: "= 1.0x → Average",
+        text: "0.8-1.2x → Average",
       },
       {
         icon: "▼",
         cls: "oii-tooltip__legend-icon--down",
-        text: "< 1.0x → Slower than average",
+        text: "< 0.8x → Below Average",
       },
     ].forEach((item) => {
       const row = document.createElement("div");
