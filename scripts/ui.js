@@ -53,9 +53,14 @@ const oiiUI = {
 
     [
       {
+        icon: "▲▲",
+        cls: "oii-tooltip__legend-icon--up",
+        text: "> 1.5x → Very Fast",
+      },
+      {
         icon: "▲",
         cls: "oii-tooltip__legend-icon--up",
-        text: "> 1.5x → Very Fast / Exceptional",
+        text: "1.2-1.5x → Fast",
       },
       {
         icon: "●",
@@ -65,7 +70,12 @@ const oiiUI = {
       {
         icon: "▼",
         cls: "oii-tooltip__legend-icon--down",
-        text: "< 0.8x → Below Average",
+        text: "0.5-0.8x → Slow",
+      },
+      {
+        icon: "▼▼",
+        cls: "oii-tooltip__legend-icon--down",
+        text: "< 0.5x → Very Slow",
       },
     ].forEach((item) => {
       const row = document.createElement("div");
