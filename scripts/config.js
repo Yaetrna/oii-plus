@@ -41,12 +41,12 @@ const oiiConfig = {
     styles: "oii-styles",
   },
   timing: {
-    checkInterval: 100,
-    maxWaitTime: 5000,
-    initialDelay: 500,
-    navigationDelay: 500,
-    urlChangeDelay: 1000,
-    retryDelay: 2000,
+    checkInterval: 50,      // Check more frequently
+    maxWaitTime: 3000,      // Reduced from 5s
+    initialDelay: 0,        // No initial delay - start immediately
+    navigationDelay: 100,   // Reduced from 500ms
+    urlChangeDelay: 200,    // Reduced from 1000ms
+    retryDelay: 300,        // Reduced from 2000ms
   },
 };
 

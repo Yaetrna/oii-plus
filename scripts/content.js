@@ -33,14 +33,16 @@ async function injectIndices(additionalPlaytimeHours = 0, forceRecreate = false)
   try {
     oiiUI.removeExisting();
     
-    if (!currentUserData) {
-      await new Promise((r) => setTimeout(r, oiiConfig.timing.initialDelay));
-    }
-
+    // Try to get data immediately first (no delay)
     let userData = oiiDataExtractor.getData();
+    
+    // Only wait if data isn't available yet
     if (!userData) {
-      await new Promise((r) => setTimeout(r, oiiConfig.timing.retryDelay));
-      userData = oiiDataExtractor.getData();
+      // Quick retry with minimal delay
+      for (let i = 0; i < 3 && !userData; i++) {
+        await new Promise((r) => setTimeout(r, oiiConfig.timing.retryDelay));
+        userData = oiiDataExtractor.getData();
+      }
     }
     if (!userData) return;
 
