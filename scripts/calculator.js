@@ -53,15 +53,35 @@ const oiiCalculator = {
   },
 
   /**
-   * Get color based on II value.
-   * Green = fast, Yellow = average, Red = slow
+   * Get color based on II value using smooth gradient.
+   * Uses HSL color space: 0=red, 60=yellow, 120=green, 180=cyan, 240=blue, 300=magenta
+   * Range: 0.3x (red) → 1.0x (yellow) → 2.0x (cyan/blue)
    */
   getColor(ii) {
     if (ii <= 0) return "#888";
-    if (ii >= 1.5) return "hsl(120, 100%, 45%)"; // Bright green - exceptional
-    if (ii >= 1.2) return "hsl(90, 100%, 50%)";  // Yellow-green - fast
-    if (ii >= 0.8) return "hsl(60, 100%, 50%)";  // Yellow - average
-    if (ii >= 0.5) return "hsl(30, 100%, 50%)";  // Orange - slow
-    return "hsl(0, 100%, 50%)";                   // Red - very slow
+    
+    // Clamp II to reasonable display range
+    const minII = 0.3;
+    const maxII = 2.5;
+    const clampedII = Math.max(minII, Math.min(maxII, ii));
+    
+    // Map II to hue: 0.3 → 0° (red), 1.0 → 60° (yellow), 2.5 → 200° (cyan-blue)
+    let hue;
+    if (clampedII <= 1.0) {
+      // Below/at average: red (0°) to yellow (60°)
+      const t = (clampedII - minII) / (1.0 - minII);
+      hue = t * 60;
+    } else {
+      // Above average: yellow (60°) to cyan-blue (200°)
+      const t = (clampedII - 1.0) / (maxII - 1.0);
+      hue = 60 + t * 140;
+    }
+    
+    // Increase saturation and adjust lightness for visibility
+    const saturation = 100;
+    const lightness = 50;
+    
+    return `hsl(${Math.round(hue)}, ${saturation}%, ${lightness}%)`;
   },
 };
+
