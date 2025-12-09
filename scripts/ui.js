@@ -28,14 +28,20 @@ const oiiUI = {
       .oii-index:hover .oii-tooltip{visibility:visible;opacity:1}
       .oii-tooltip__title{font-weight:700;font-size:13px;color:hsl(var(--hsl-c1,0 0% 100%));margin-bottom:6px}
       .oii-tooltip__desc{font-size:11px;color:hsl(var(--hsl-c2,0 0% 70%));margin-bottom:8px}
-      .oii-tooltip__legend{font-size:10px;color:hsl(var(--hsl-c2,0 0% 70%));line-height:1.5}
-      .oii-tooltip__legend-item{display:flex;gap:6px;align-items:center}
-      .oii-tooltip__legend-icon--up{color:#60f000}
-      .oii-tooltip__legend-icon--mid{color:#f0c000}
-      .oii-tooltip__legend-icon--down{color:#f04000}
-      .oii-tooltip__legend-icon--blue-up{color:#00c8ff}
-      .oii-tooltip__legend-icon--blue-mid{color:#8080ff}
-      .oii-tooltip__legend-icon--blue-down{color:#c060ff}`;
+      .oii-tooltip__legend{font-size:10px;color:hsl(var(--hsl-c2,0 0% 70%));line-height:1.8}
+      .oii-tooltip__legend-item{display:flex;gap:8px;align-items:center}
+      .oii-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:0 0 4px currentColor}
+      .oii-dot--ii-5{background:linear-gradient(135deg,#7fff00,#32cd32);box-shadow:0 0 6px #7fff00}
+      .oii-dot--ii-4{background:linear-gradient(135deg,#adff2f,#9acd32);box-shadow:0 0 5px #adff2f}
+      .oii-dot--ii-3{background:linear-gradient(135deg,#ffd700,#ffa500);box-shadow:0 0 5px #ffd700}
+      .oii-dot--ii-2{background:linear-gradient(135deg,#ff8c00,#ff6347);box-shadow:0 0 5px #ff8c00}
+      .oii-dot--ii-1{background:linear-gradient(135deg,#ff4500,#dc143c);box-shadow:0 0 5px #ff4500}
+      .oii-dot--si-6{background:linear-gradient(135deg,#00ffff,#00bfff);box-shadow:0 0 6px #00ffff}
+      .oii-dot--si-5{background:linear-gradient(135deg,#1e90ff,#4169e1);box-shadow:0 0 5px #1e90ff}
+      .oii-dot--si-4{background:linear-gradient(135deg,#6a5acd,#7b68ee);box-shadow:0 0 5px #6a5acd}
+      .oii-dot--si-3{background:linear-gradient(135deg,#9370db,#8a2be2);box-shadow:0 0 5px #9370db}
+      .oii-dot--si-2{background:linear-gradient(135deg,#ba55d3,#9932cc);box-shadow:0 0 5px #ba55d3}
+      .oii-dot--si-1{background:linear-gradient(135deg,#da70d6,#ff69b4);box-shadow:0 0 5px #da70d6}`;
     document.head.appendChild(style);
   },
 
@@ -57,19 +63,18 @@ const oiiUI = {
     legend.className = "oii-tooltip__legend";
 
     [
-      { icon: "▲▲", cls: "oii-tooltip__legend-icon--up", text: "> 1.5x Very Active" },
-      { icon: "▲", cls: "oii-tooltip__legend-icon--up", text: "1.2-1.5x Active" },
-      { icon: "●", cls: "oii-tooltip__legend-icon--mid", text: "0.8-1.2x Average" },
-      { icon: "▼", cls: "oii-tooltip__legend-icon--down", text: "0.5-0.8x Casual" },
-      { icon: "▼▼", cls: "oii-tooltip__legend-icon--down", text: "< 0.5x Very Casual" },
+      { dotClass: "oii-dot--ii-5", text: "> 1.5x Very Active" },
+      { dotClass: "oii-dot--ii-4", text: "1.2-1.5x Active" },
+      { dotClass: "oii-dot--ii-3", text: "0.8-1.2x Average" },
+      { dotClass: "oii-dot--ii-2", text: "0.5-0.8x Casual" },
+      { dotClass: "oii-dot--ii-1", text: "< 0.5x Very Casual" },
     ].forEach((item) => {
       const row = document.createElement("div");
       row.className = "oii-tooltip__legend-item";
-      const iconSpan = document.createElement("span");
-      iconSpan.className = item.cls;
-      iconSpan.textContent = item.icon;
-      row.appendChild(iconSpan);
-      row.appendChild(document.createTextNode(` ${item.text}`));
+      const dot = document.createElement("span");
+      dot.className = `oii-dot ${item.dotClass}`;
+      row.appendChild(dot);
+      row.appendChild(document.createTextNode(item.text));
       legend.appendChild(row);
     });
 
@@ -129,20 +134,19 @@ const oiiUI = {
     legend.className = "oii-tooltip__legend";
 
     [
-      { icon: "★★", cls: "oii-tooltip__legend-icon--blue-up", text: "> 2.0x Prodigy" },
-      { icon: "★", cls: "oii-tooltip__legend-icon--blue-up", text: "1.5-2.0x Gifted" },
-      { icon: "◆", cls: "oii-tooltip__legend-icon--blue-up", text: "1.2-1.5x Skilled" },
-      { icon: "●", cls: "oii-tooltip__legend-icon--blue-mid", text: "0.8-1.2x Average" },
-      { icon: "○", cls: "oii-tooltip__legend-icon--blue-down", text: "0.5-0.8x Developing" },
-      { icon: "·", cls: "oii-tooltip__legend-icon--blue-down", text: "< 0.5x Beginner" },
+      { dotClass: "oii-dot--si-6", text: "> 2.0x Prodigy" },
+      { dotClass: "oii-dot--si-5", text: "1.5-2.0x Gifted" },
+      { dotClass: "oii-dot--si-4", text: "1.2-1.5x Skilled" },
+      { dotClass: "oii-dot--si-3", text: "0.8-1.2x Average" },
+      { dotClass: "oii-dot--si-2", text: "0.5-0.8x Developing" },
+      { dotClass: "oii-dot--si-1", text: "< 0.5x Beginner" },
     ].forEach((item) => {
       const row = document.createElement("div");
       row.className = "oii-tooltip__legend-item";
-      const iconSpan = document.createElement("span");
-      iconSpan.className = item.cls;
-      iconSpan.textContent = item.icon;
-      row.appendChild(iconSpan);
-      row.appendChild(document.createTextNode(` ${item.text}`));
+      const dot = document.createElement("span");
+      dot.className = `oii-dot ${item.dotClass}`;
+      row.appendChild(dot);
+      row.appendChild(document.createTextNode(item.text));
       legend.appendChild(row);
     });
 
