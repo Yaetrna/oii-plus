@@ -3,32 +3,39 @@
 let currentUserData = null;
 let isInjecting = false;
 
-async function injectII(additionalPlaytimeHours = 0, forceRecreate = false) {
+/**
+ * Inject both II (Improvement Indicator) and SI (Skill Index) into the profile.
+ */
+async function injectIndices(additionalPlaytimeHours = 0, forceRecreate = false) {
   if (isInjecting) return;
 
   oiiUI.addStyles();
-  const existingElement = document.getElementById(
-    oiiConfig.elementIds.iiElement
-  );
+  
+  const existingII = document.getElementById(oiiConfig.elementIds.iiElement);
+  const existingSI = document.getElementById(oiiConfig.elementIds.siElement);
 
-  if (!forceRecreate && currentUserData && existingElement) {
-    const playtimeHours =
-      currentUserData.playtimeHours + additionalPlaytimeHours;
-    const ii = oiiCalculator.calculateII(
-      currentUserData.totalHits,
-      playtimeHours,
-      currentUserData.mode
-    );
+  // Update existing elements if possible
+  if (!forceRecreate && currentUserData && existingII && existingSI) {
+    const playtimeHours = currentUserData.playtimeHours + additionalPlaytimeHours;
+    const ii = oiiCalculator.calculateII(currentUserData.totalHits, playtimeHours, currentUserData.mode);
+    const si = oiiCalculator.calculateSI(currentUserData.pp, playtimeHours, currentUserData.mode);
+    
     currentUserData.ii = ii;
-    if (oiiUI.updateElement(ii, playtimeHours)) return;
+    currentUserData.si = si;
+    
+    const iiUpdated = oiiUI.updateIIElement(ii, playtimeHours);
+    const siUpdated = oiiUI.updateSIElement(si, playtimeHours);
+    if (iiUpdated && siUpdated) return;
   }
 
   isInjecting = true;
 
   try {
     oiiUI.removeExisting();
-    if (!currentUserData)
+    
+    if (!currentUserData) {
       await new Promise((r) => setTimeout(r, oiiConfig.timing.initialDelay));
+    }
 
     let userData = oiiDataExtractor.getData();
     if (!userData) {
@@ -37,35 +44,45 @@ async function injectII(additionalPlaytimeHours = 0, forceRecreate = false) {
     }
     if (!userData) return;
 
-    const playtimeHours =
-      userData.playTimeSeconds / 3600 + additionalPlaytimeHours;
+    const playtimeHours = userData.playTimeSeconds / 3600 + additionalPlaytimeHours;
     const totalHits = userData.totalHits || 0;
-    const ii = oiiCalculator.calculateII(
-      totalHits,
-      playtimeHours,
-      userData.mode
-    );
+    const pp = userData.pp || 0;
+    
+    const ii = oiiCalculator.calculateII(totalHits, playtimeHours, userData.mode);
+    const si = oiiCalculator.calculateSI(pp, playtimeHours, userData.mode);
 
     currentUserData = {
       ...userData,
       playtimeHours: userData.playTimeSeconds / 3600,
       additionalPlaytimeHours,
       ii,
+      si,
     };
 
     oiiUI.removeExisting();
-    const iiElement = oiiUI.createElement(ii, playtimeHours);
+    
+    const iiElement = oiiUI.createIIElement(ii, playtimeHours);
+    const siElement = oiiUI.createSIElement(si, playtimeHours);
+    
     const injection = oiiUI.findInjectionPoint();
 
     if (injection) {
       injection.element.appendChild(iiElement);
+      injection.element.appendChild(siElement);
     } else {
       iiElement.classList.add("oii-floating");
+      siElement.classList.add("oii-floating");
       document.body.appendChild(iiElement);
+      document.body.appendChild(siElement);
     }
   } finally {
     isInjecting = false;
   }
+}
+
+// Legacy alias
+function injectII(additionalPlaytimeHours = 0, forceRecreate = false) {
+  return injectIndices(additionalPlaytimeHours, forceRecreate);
 }
 
 function setupMessageHandlers() {
@@ -75,15 +92,13 @@ function setupMessageHandlers() {
     (request, sender, sendResponse) => {
       switch (request.type) {
         case "UPDATE_PLAYTIME":
-          injectII(Number(request.additionalPlaytimeHours));
+          injectIndices(Number(request.additionalPlaytimeHours));
           sendResponse({ success: true });
           break;
 
         case "GET_PREDICTION":
           if (currentUserData) {
-            const playtimeHours =
-              currentUserData.playtimeHours +
-              (request.additionalPlaytimeHours || 0);
+            const playtimeHours = currentUserData.playtimeHours + (request.additionalPlaytimeHours || 0);
             const totalHits = currentUserData.totalHits || 0;
             sendResponse({
               success: true,
@@ -94,11 +109,8 @@ function setupMessageHandlers() {
                 playtimeHours,
                 currentUserData.mode
               ),
-              currentII: oiiCalculator.calculateII(
-                totalHits,
-                playtimeHours,
-                currentUserData.mode
-              ),
+              currentII: oiiCalculator.calculateII(totalHits, playtimeHours, currentUserData.mode),
+              currentSI: oiiCalculator.calculateSI(currentUserData.pp, playtimeHours, currentUserData.mode),
             });
           }
           break;
@@ -115,6 +127,7 @@ function setupMessageHandlers() {
                     playtimeHours: currentUserData.playtimeHours,
                     mode: currentUserData.mode,
                     ii: currentUserData.ii,
+                    si: currentUserData.si,
                   },
                 }
               : { success: false, error: "No data" }
@@ -128,13 +141,13 @@ function setupMessageHandlers() {
 
 function init() {
   if (!/\/users\/\d+/.test(location.href)) return;
-  injectII(0);
+  injectIndices(0);
 }
 
 function setupNavigationObservers() {
   document.addEventListener("turbo:load", () => {
     if (/\/users\/\d+/.test(location.href)) {
-      setTimeout(() => injectII(0), oiiConfig.timing.navigationDelay);
+      setTimeout(() => injectIndices(0), oiiConfig.timing.navigationDelay);
     }
   });
 
@@ -143,7 +156,7 @@ function setupNavigationObservers() {
     if (location.href !== lastUrl) {
       lastUrl = location.href;
       if (/\/users\/\d+/.test(location.href)) {
-        setTimeout(() => injectII(0), oiiConfig.timing.urlChangeDelay);
+        setTimeout(() => injectIndices(0), oiiConfig.timing.urlChangeDelay);
       }
     }
   }).observe(document.body, { childList: true, subtree: true });
