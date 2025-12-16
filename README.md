@@ -52,7 +52,7 @@ $$\text{Expected Playtime} = a \times \text{Total Hits}^b$$
 
 ## Skill Index (SI)
 
-Measures skill efficiency — your PP relative to the expected PP for your playtime.
+Measures your PP relative to the expected PP for your playtime.
 
 $$\text{SI} = \frac{\text{Your PP}}{\text{Expected PP}}$$
 
