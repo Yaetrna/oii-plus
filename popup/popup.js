@@ -155,18 +155,28 @@ function hideAdjustedII() {
   document.getElementById("adjustedII").className = "input-result";
 }
 
+function showAdjustedSI(text, className = "") {
+  const el = document.getElementById("adjustedSI");
+  if (!el) return;
+  el.textContent = text;
+  el.className = "input-result visible " + className;
+}
+
+function hideAdjustedSI() {
+  const el = document.getElementById("adjustedSI");
+  if (!el) return;
+  el.className = "input-result";
+}
+
 function hidePrediction() {
   document.getElementById("predictionResult").className = "input-result";
 }
 
 async function handleAdditionalPlaytimeChange(event) {
   const additionalHours = parseFloat(event.target.value) || 0;
-  if (additionalHours < 0) {
-    event.target.value = 0;
-    return;
-  }
   if (additionalHours === 0) {
     hideAdjustedII();
+    hideAdjustedSI();
     return;
   }
 
@@ -179,12 +189,27 @@ async function handleAdditionalPlaytimeChange(event) {
       type: "GET_CURRENT_DATA",
     });
     if (dataResponse.success && dataResponse.data) {
-      const { totalHits, playtimeHours } = dataResponse.data;
-      if (totalHits > 0) {
+      const { totalHits, playtimeHours, pp, mode } = dataResponse.data;
+      const newPlaytime = playtimeHours + additionalHours;
+      
+      // Calculate adjusted II
+      if (totalHits > 0 && newPlaytime > 0) {
         const expectedPlaytime = 0.000545 * Math.pow(totalHits, 0.8737);
-        const adjustedII = expectedPlaytime / (playtimeHours + additionalHours);
+        const adjustedII = expectedPlaytime / newPlaytime;
+        const sign = additionalHours > 0 ? '+' : '';
         showAdjustedII(
-          `Adjusted II: ${adjustedII.toFixed(2)}x (with +${additionalHours}h)`,
+          `Adjusted II: ${adjustedII.toFixed(2)}x (${sign}${additionalHours}h)`,
+          "highlight"
+        );
+      }
+      
+      // Calculate adjusted SI
+      if (pp > 0 && newPlaytime > 0) {
+        const expectedPP = 226.4153 * Math.pow(newPlaytime, 0.4878); // osu standard
+        const adjustedSI = pp / expectedPP;
+        const sign = additionalHours > 0 ? '+' : '';
+        showAdjustedSI(
+          `Adjusted SI: ${adjustedSI.toFixed(2)}x (${sign}${additionalHours}h)`,
           "highlight"
         );
       }
@@ -240,6 +265,35 @@ function debounce(func, wait) {
   };
 }
 
+/**
+ * Periodically check if the active tab's profile has changed and refresh stats.
+ */
+function setupProfileChangeDetection() {
+  let lastUsername = null;
+
+  const checkProfile = async () => {
+    const response = await sendToContentScript({ type: "GET_CURRENT_DATA" });
+    if (response.success && response.data) {
+      const currentUsername = response.data.username;
+      if (lastUsername && lastUsername !== currentUsername) {
+        // Profile changed, refresh entire display
+        showStatsView();
+        updateStatsDisplay(response.data);
+        // Reset adjustment inputs
+        document.getElementById("additionalPlaytime").value = "0";
+        document.getElementById("goalPP").value = "";
+        hideAdjustedII();
+        hideAdjustedSI();
+        hidePrediction();
+      }
+      lastUsername = currentUsername;
+    }
+  };
+
+  // Check every 500ms for profile changes
+  setInterval(checkProfile, 500);
+}
+
 async function init() {
   const profileLinks = [
     "https://osu.ppy.sh/users/32693046",
@@ -292,6 +346,9 @@ async function init() {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") window.close();
   });
+
+  // Start periodic profile change detection
+  setupProfileChangeDetection();
 }
 
 if (document.readyState === "loading") {
