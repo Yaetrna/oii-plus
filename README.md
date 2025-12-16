@@ -21,7 +21,7 @@
 
 ## Improvement Indicator (II)
 
-Measures how many hits you accumulate per hour compared to the average player.
+Measures your improvement speed compared to the average player.
 
 $$\text{II} = \frac{\text{Expected Playtime}}{\text{Actual Playtime}}$$
 
