@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>osu! Improvement Indicator</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <div class="header-content">
+          <img src="../icons/icon32.png" alt="oii+" class="logo" />
+          <h1>Improvement Indicator</h1>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="stats-section" id="statsSection">
+          <div class="section-title">Current Stats</div>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-label">Player</span>
+              <span class="stat-value" id="playerName">-</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Mode</span>
+              <span class="stat-value" id="gameMode">-</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">PP</span>
+              <span class="stat-value" id="currentPP">-</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Playtime</span>
+              <span class="stat-value" id="currentPlaytime">-</span>
+            </div>
+            <div class="stat-item stat-item--highlight">
+              <span class="stat-label">Current II</span>
+              <span class="stat-value" id="currentII">-</span>
+            </div>
+            <div class="stat-item stat-item--highlight stat-item--si">
+              <span class="stat-label">Current SI</span>
+              <span class="stat-value" id="currentSI">-</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="not-on-profile" id="notOnProfile" style="display: none">
+          <img src="../icons/icon128.png" alt="oii+" class="icon" />
+          <p>
+            Visit an osu! player profile to see their improvement indicator!
+          </p>
+          <a
+            href="https://osu.ppy.sh/users/2"
+            id="randomProfileLink"
+            target="_blank"
+            class="btn btn-secondary"
+            >Go to an osu! Profile</a
+          >
+        </section>
+
+        <section class="calculator-section" id="calculatorSection">
+          <div class="section-title">Calculator</div>
+          <div class="input-group">
+            <label for="additionalPlaytime">
+              Playtime Adjustment (hours)
+              <span
+                class="tooltip-trigger"
+                title="Add or subtract playtime (negative = earlier point in time)"
+                >?</span
+              >
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="number"
+                id="additionalPlaytime"
+                value="0"
+                step="1"
+                placeholder="0"
+              />
+              <span class="input-suffix">h</span>
+            </div>
+            <div class="input-result" id="adjustedII"></div>
+            <div class="input-result" id="adjustedSI"></div>
+          </div>
+          <div class="input-group">
+            <label for="goalPP">
+              Goal PP
+              <span
+                class="tooltip-trigger"
+                title="Enter your target PP to see how long it might take"
+                >?</span
+              >
+            </label>
+            <div class="input-wrapper">
+              <input
+                type="number"
+                id="goalPP"
+                min="0"
+                step="100"
+                placeholder="Enter goal PP"
+              />
+              <span class="input-suffix">pp</span>
+            </div>
+            <div class="input-result" id="predictionResult"></div>
+          </div>
+        </section>
+
+        <section class="info-section">
+          <div class="section-title">What is II?</div>
+          <p>
+            The <strong>Improvement Indicator</strong> compares your improvement
+            speed to the average player with similar stats.
+          </p>
+          <div class="formula">II = Expected Playtime ÷ Actual Playtime</div>
+          <div class="legend">
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: hsl(120, 100%, 45%)"
+              ></span
+              ><span>&gt; 1.20x - Top 7% (+1.5σ)</span>
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: hsl(90, 100%, 50%)"
+              ></span
+              ><span>1.07x - 1.20x - Above average</span>
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: hsl(60, 100%, 50%)"
+              ></span
+              ><span>0.94x - 1.07x - Average (±0.5σ)</span>
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: hsl(30, 100%, 50%)"
+              ></span
+              ><span>0.80x - 0.94x - Below average</span>
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: hsl(0, 100%, 50%)"
+              ></span
+              ><span>&lt; 0.80x - Bottom 7% (-1.5σ)</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-section info-section--si">
+          <div class="section-title">What is SI?</div>
+          <p>
+            The <strong>Skill Index</strong> measures your PP efficiency
+            relative to your playtime compared to average players.
+          </p>
+          <div class="formula">SI = Your PP ÷ Expected PP for Playtime</div>
+          <div class="legend">
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: hsl(180, 100%, 50%)"
+              ></span
+              ><span>&gt; 2.0x - Prodigy</span>
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: hsl(210, 100%, 55%)"
+              ></span
+              ><span>1.5x - 2.0x - Gifted</span>
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: hsl(240, 100%, 55%)"
+              ></span
+              ><span>1.2x - 1.5x - Skilled</span>
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: hsl(270, 100%, 55%)"
+              ></span
+              ><span>0.8x - 1.2x - Average</span>
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: hsl(285, 100%, 55%)"
+              ></span
+              ><span>0.5x - 0.8x - Developing</span>
+            </div>
+            <div class="legend-item">
+              <span
+                class="legend-color"
+                style="background: hsl(300, 100%, 55%)"
+              ></span
+              ><span>&lt; 0.5x - Beginner</span>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <span>oii+ v4.0.0</span>
+        <a href="https://github.com/Yaetrna/oii-plus" target="_blank">GitHub</a>
+      </footer>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>
