@@ -38,7 +38,7 @@ function getIIColor(ii) {
   return `hsl(${ii * 60}, 100%, 50%)`;
 }
 
-async function sendToContentScript(message) {
+async function sendToContentScript(message, retries = 2) {
   try {
     if (!browserAPI)
       return { success: false, error: "Browser API not available" };
@@ -46,12 +46,54 @@ async function sendToContentScript(message) {
       active: true,
       currentWindow: true,
     });
-    if (!tab?.url?.includes("osu.ppy.sh/users/"))
+    if (!tab) return { success: false, error: "No active tab found" };
+    
+    // Check URL - handle both with and without URL access
+    const url = tab.url || tab.pendingUrl || "";
+    const isOsuProfile = url.includes("osu.ppy.sh/users/") || 
+                         /\/users\/\d+/.test(url);
+    if (!isOsuProfile && url) {
       return { success: false, error: "Not on an osu! profile page" };
-    return await browserAPI.tabs.sendMessage(tab.id, message);
+    }
+    
+    // Try to send message with retry logic for cases where content script isn't ready
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const response = await browserAPI.tabs.sendMessage(tab.id, message);
+        if (response) return response;
+      } catch (e) {
+        // Content script might not be ready yet, wait and retry
+        if (attempt < retries) {
+          await new Promise(r => setTimeout(r, 300));
+          continue;
+        }
+        throw e;
+      }
+    }
+    return { success: false, error: "No response from content script" };
   } catch (error) {
+    // Handle common errors
+    if (error.message?.includes("Receiving end does not exist")) {
+      return { success: false, error: "Content script not loaded. Try refreshing the page." };
+    }
     return { success: false, error: error.message };
   }
+}
+
+function getSIColor(si) {
+  if (si <= 0) return "#888";
+  const minSI = 0.3, maxSI = 3.0;
+  const clamped = Math.max(minSI, Math.min(maxSI, si));
+  
+  let hue;
+  if (clamped <= 1.0) {
+    const t = (clamped - minSI) / (1.0 - minSI);
+    hue = 270 + t * 30; // purple (270) → blue-purple (300)
+  } else {
+    const t = (clamped - 1.0) / (maxSI - 1.0);
+    hue = 180 + (1 - t) * 90; // cyan (180) ← blue (270)
+  }
+  return `hsl(${Math.round(hue)}, 100%, 55%)`;
 }
 
 function updateStatsDisplay(data) {
@@ -71,6 +113,17 @@ function updateStatsDisplay(data) {
   } else {
     iiElement.textContent = "-";
     iiElement.style.color = "";
+  }
+
+  const siElement = document.getElementById("currentSI");
+  if (siElement) {
+    if (data.si && data.si > 0) {
+      siElement.textContent = `${data.si.toFixed(2)}x`;
+      siElement.style.color = getSIColor(data.si);
+    } else {
+      siElement.textContent = "-";
+      siElement.style.color = "";
+    }
   }
 }
 

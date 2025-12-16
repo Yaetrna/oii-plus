@@ -2,12 +2,21 @@
 
 let currentUserData = null;
 let isInjecting = false;
+let lastInjectedUrl = null;
 
 /**
  * Inject both II (Improvement Indicator) and SI (Skill Index) into the profile.
  */
 async function injectIndices(additionalPlaytimeHours = 0, forceRecreate = false) {
   if (isInjecting) return;
+  
+  // Prevent duplicate injection for same URL
+  const currentUrl = location.href;
+  if (!forceRecreate && lastInjectedUrl === currentUrl && currentUserData) {
+    const existingII = document.getElementById(oiiConfig.elementIds.iiElement);
+    const existingSI = document.getElementById(oiiConfig.elementIds.siElement);
+    if (existingII && existingSI) return;
+  }
 
   oiiUI.addStyles();
   
@@ -36,14 +45,12 @@ async function injectIndices(additionalPlaytimeHours = 0, forceRecreate = false)
     // Try to get data immediately first (no delay)
     let userData = oiiDataExtractor.getData();
     
-    // Only wait if data isn't available yet
+    // If no data yet, wait for data-initial-data to be available
     if (!userData) {
-      // Quick retry with minimal delay
-      for (let i = 0; i < 3 && !userData; i++) {
-        await new Promise((r) => setTimeout(r, oiiConfig.timing.retryDelay));
-        userData = oiiDataExtractor.getData();
-      }
+      // Use a smarter wait that watches for the element
+      userData = await waitForProfileData();
     }
+    
     if (!userData) return;
 
     const playtimeHours = userData.playTimeSeconds / 3600 + additionalPlaytimeHours;
@@ -60,6 +67,9 @@ async function injectIndices(additionalPlaytimeHours = 0, forceRecreate = false)
       ii,
       si,
     };
+
+    // Track last injected URL
+    lastInjectedUrl = location.href;
 
     oiiUI.removeExisting();
     
@@ -85,6 +95,77 @@ async function injectIndices(additionalPlaytimeHours = 0, forceRecreate = false)
 // Legacy alias
 function injectII(additionalPlaytimeHours = 0, forceRecreate = false) {
   return injectIndices(additionalPlaytimeHours, forceRecreate);
+}
+
+/**
+ * Wait for profile data to be available using MutationObserver for efficiency.
+ * Falls back to polling if needed.
+ */
+function waitForProfileData(maxWaitTime = 3000) {
+  return new Promise((resolve) => {
+    // First, try immediate extraction
+    let userData = oiiDataExtractor.getData();
+    if (userData?.pp && userData?.playTimeSeconds) {
+      resolve(userData);
+      return;
+    }
+    
+    const startTime = Date.now();
+    let resolved = false;
+    
+    // Use MutationObserver to detect when data becomes available
+    const observer = new MutationObserver(() => {
+      if (resolved) return;
+      userData = oiiDataExtractor.getData();
+      if (userData?.pp && userData?.playTimeSeconds) {
+        resolved = true;
+        observer.disconnect();
+        resolve(userData);
+      }
+    });
+    
+    observer.observe(document.body, { 
+      childList: true, 
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-initial-data']
+    });
+    
+    // Also poll as fallback (for cases where mutation doesn't trigger)
+    const pollInterval = setInterval(() => {
+      if (resolved) {
+        clearInterval(pollInterval);
+        return;
+      }
+      
+      userData = oiiDataExtractor.getData();
+      if (userData?.pp && userData?.playTimeSeconds) {
+        resolved = true;
+        observer.disconnect();
+        clearInterval(pollInterval);
+        resolve(userData);
+        return;
+      }
+      
+      // Timeout
+      if (Date.now() - startTime > maxWaitTime) {
+        resolved = true;
+        observer.disconnect();
+        clearInterval(pollInterval);
+        resolve(null);
+      }
+    }, 100);
+    
+    // Hard timeout safety
+    setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        observer.disconnect();
+        clearInterval(pollInterval);
+        resolve(oiiDataExtractor.getData());
+      }
+    }, maxWaitTime + 100);
+  });
 }
 
 function setupMessageHandlers() {
@@ -143,22 +224,48 @@ function setupMessageHandlers() {
 
 function init() {
   if (!/\/users\/\d+/.test(location.href)) return;
+  // Reset data when visiting a new profile
+  currentUserData = null;
+  lastInjectedUrl = null;
   injectIndices(0);
 }
 
 function setupNavigationObservers() {
+  // Handle Turbo navigation (osu! uses Turbo for SPA-like navigation)
   document.addEventListener("turbo:load", () => {
     if (/\/users\/\d+/.test(location.href)) {
-      setTimeout(() => injectIndices(0), oiiConfig.timing.navigationDelay);
+      currentUserData = null;
+      lastInjectedUrl = null;
+      setTimeout(() => injectIndices(0, true), oiiConfig.timing.navigationDelay);
+    }
+  });
+  
+  // Also listen for turbo:render which fires earlier
+  document.addEventListener("turbo:render", () => {
+    if (/\/users\/\d+/.test(location.href)) {
+      // Just remove old elements, injection will happen on turbo:load
+      oiiUI.removeExisting();
     }
   });
 
+  // Handle browser back/forward navigation
+  window.addEventListener("popstate", () => {
+    if (/\/users\/\d+/.test(location.href)) {
+      currentUserData = null;
+      lastInjectedUrl = null;
+      setTimeout(() => injectIndices(0, true), oiiConfig.timing.navigationDelay);
+    }
+  });
+
+  // Fallback: watch for URL changes via MutationObserver
   let lastUrl = location.href;
   new MutationObserver(() => {
     if (location.href !== lastUrl) {
       lastUrl = location.href;
       if (/\/users\/\d+/.test(location.href)) {
-        setTimeout(() => injectIndices(0), oiiConfig.timing.urlChangeDelay);
+        currentUserData = null;
+        lastInjectedUrl = null;
+        setTimeout(() => injectIndices(0, true), oiiConfig.timing.urlChangeDelay);
       }
     }
   }).observe(document.body, { childList: true, subtree: true });

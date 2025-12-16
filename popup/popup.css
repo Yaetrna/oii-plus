@@ -116,13 +116,23 @@ body {
   gap: 2px;
 }
 .stat-item--highlight {
-  grid-column: span 2;
   background: linear-gradient(
     135deg,
     rgba(255, 102, 171, 0.2),
     rgba(204, 82, 137, 0.2)
   );
   border: 1px solid var(--border-color);
+}
+.stat-item--si {
+  background: linear-gradient(
+    135deg,
+    rgba(138, 43, 226, 0.2),
+    rgba(75, 0, 130, 0.2)
+  );
+  border: 1px solid rgba(138, 43, 226, 0.3);
+}
+.stat-item--si .stat-value {
+  color: #9370db;
 }
 .stat-label {
   font-size: 11px;
