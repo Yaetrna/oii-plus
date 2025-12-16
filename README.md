@@ -1,145 +1,206 @@
 # osu! Improvement Indicator Plus (oii+)
 
-<p align="center">
-  <img src="icons/icon128.png" width="128" height="128" alt="oii+ logo">
-</p>
+A browser extension that displays performance metrics on osu! player profiles.
 
-<p align="center">
-  <strong>A browser extension that displays the improvement speed of a player on their osu! profile.</strong>
-</p>
-
-<p align="center">
-  <a href="#installation">Installation</a> •
-  <a href="#features">Features</a> •
-  <a href="#how-it-works">How It Works</a> •
-  <a href="#development">Development</a>
-</p>
+**Version:** 6.0.0
 
 ---
 
-## What is the Improvement Indicator?
+## Overview
 
-The **Improvement Indicator (II)** is a metric that compares your improvement speed to the average osu! player.
+oii+ provides two key metrics derived from analysis of 134,953 osu! players with 250+ hours of playtime:
 
-Trained on 250,000+ players using machine learning.
+1. **Improvement Indicator (II)** - Activity efficiency metric showing how efficiently you accumulate hits per hour
+2. **Skill Index (SI)** - Skill efficiency metric showing your PP relative to expected PP for your playtime
 
-| II Value      | Meaning            | $\sigma$                     | % of Players |
-| ------------- | ------------------ | ---------------------------- | ------------ |
-| $> 1.20$      | Exceptionally fast | $> +1.5\sigma$               | Top 7%       |
-| $1.07 - 1.20$ | Above average      | $+0.5\sigma$ to $+1.5\sigma$ | Top 7-31%    |
-| $0.94 - 1.07$ | Average            | $\pm 0.5\sigma$              | Middle 38%   |
-| $0.80 - 0.94$ | Below average      | $-0.5\sigma$ to $-1.5\sigma$ | Bottom 7-31% |
-| $< 0.80$      | Taking your time   | $< -1.5\sigma$               | Bottom 7%    |
+---
+
+## Improvement Indicator (II)
+
+The II compares your improvement speed to the average player.
+
+**Formula:**
+```
+II = Expected Playtime / Actual Playtime
+Expected Playtime = a × Total Hits^b
+```
+
+### Coefficients by Game Mode
+
+| Mode           | a        | b      |
+|----------------|----------|--------|
+| osu!standard   | 0.000734 | 0.8555 |
+| osu!taiko      | 0.000680 | 0.8600 |
+| osu!catch      | 0.000620 | 0.8650 |
+| osu!mania      | 0.000580 | 0.8700 |
+
+### Interpretation
+
+| II Value      | Meaning            | Standard Deviation | Distribution  |
+|---------------|--------------------|--------------------|---------------|
+| > 1.20        | Exceptionally fast | > +1.5σ            | Top 7%        |
+| 1.07 - 1.20   | Above average      | +0.5σ to +1.5σ     | Top 7-31%     |
+| 0.94 - 1.07   | Average            | ±0.5σ              | Middle 38%    |
+| 0.80 - 0.94   | Below average      | -0.5σ to -1.5σ     | Bottom 7-31%  |
+| < 0.80        | Taking your time   | < -1.5σ            | Bottom 7%     |
+
+---
+
+## Skill Index (SI)
+
+The SI measures PP efficiency relative to playtime.
+
+**Formula:**
+```
+SI = Your PP / Expected PP
+Expected PP = c × Playtime Hours^d
+```
+
+### Coefficients by Game Mode
+
+| Mode           | c        | d      |
+|----------------|----------|--------|
+| osu!standard   | 226.4153 | 0.4878 |
+| osu!taiko      | 200.0000 | 0.5000 |
+| osu!catch      | 180.0000 | 0.5200 |
+| osu!mania      | 160.0000 | 0.5400 |
+
+### Interpretation
+
+| SI Value      | Meaning    |
+|---------------|------------|
+| > 2.0         | Prodigy    |
+| 1.5 - 2.0     | Gifted     |
+| 1.2 - 1.5     | Skilled    |
+| 0.8 - 1.2     | Average    |
+| 0.5 - 0.8     | Developing |
+| < 0.5         | Beginner   |
 
 ---
 
 ## Installation
 
-### Firefox (Development)
+### Firefox
 
-1. Go to `about:debugging#/runtime/this-firefox`
+1. Navigate to `about:debugging#/runtime/this-firefox`
 2. Click "Load Temporary Add-on"
-3. Select the `manifest.json` file
+3. Select `manifest.json` from the extension folder
 
-### Chromium
+### Chrome / Edge / Brave
 
-1. Download and unzip the latest release
-2. Go to `chrome://extensions/` (or `edge://extensions/`)
-3. Enable "Developer mode" (toggle in top-right)
-4. Click "Load unpacked"
-5. Select the unzipped folder
+1. Navigate to `chrome://extensions/` (or `edge://extensions/`)
+2. Enable "Developer mode" in the top-right corner
+3. Click "Load unpacked"
+4. Select the extension folder
 
 ---
 
 ## Features
 
-- Automatic II display on any osu! profile
-- ~~Supports all game modes (osu!, taiko, catch, mania)~~ v2 for osu! fallback for the other gamemodes.
-- Calculator for untracked playtime and goal PP prediction
-- Should work on Firefox, Chrome, Edge, and Brave (didn't check Chromium based browsers yet)
-
----
-
-## How It Works
-
-The II is calculated as:
-
-$$\text{II} = \frac{\text{Expected Playtime}}{\text{Actual Playtime}}$$
-
-### Primary Model: Total Hits (98% accuracy)
-
-The expected playtime is calculated using a Power Law model trained on 250,000+ osu! players:
-
-$$\text{Expected Playtime} = 0.000545 \times \text{Total Hits}^{0.8737}$$
-
-This achieves $R^2 = 0.98$ because Total Hits directly measures how much you've actually played.
-
-### Fallback Model: PP-Based (64% accuracy)
-
-If Total Hits isn't available, the extension uses a quadratic model:
-
-$$\text{Expected Playtime} = a + b \cdot \text{PP} + c \cdot \text{PP}^2$$
-
-| Mode  | $a$       | $b$                   | $c$                    |
-| ----- | --------- | --------------------- | ---------------------- |
-| osu!  | $-148.83$ | $0.1442$              | $-3.83 \times 10^{-7}$ |
-| Taiko | $-0.159$  | $8.91 \times 10^{-3}$ | $3.29 \times 10^{-6}$  |
-| Mania | $0.227$   | $0.0306$              | $1.07 \times 10^{-6}$  |
-| Catch | $-4.63$   | $0.0564$              | $2.11 \times 10^{-6}$  |
+- Displays II and SI directly on osu! profile pages
+- Supports all game modes (osu!standard, taiko, catch, mania)
+- Interactive popup with calculator features:
+  - Adjust playtime (supports negative values to view past performance)
+  - Calculate both adjusted II and SI
+  - Predict playtime needed to reach goal PP
+  - Automatically detects profile changes without requiring reload
+- Persistent injection that survives page re-renders
+- Compatible with Firefox, Chrome, Edge, and Brave
 
 ---
 
 ## Usage
 
 1. Install the extension
-2. Visit any osu! player profile (e.g. [Me](https://osu.ppy.sh/users/14893688))
-3. The II value appears next to Medals, PP, and Total Play Time
-4. Hover over the value to see the legend
-5. Click the extension icon to access the calculator
+2. Visit any osu! profile (example: [peppy](https://osu.ppy.sh/users/2))
+3. II and SI values appear in the profile statistics section
+4. Hover over values to see detailed tooltips with interpretations
+5. Click the extension icon to access the calculator popup
+
+### Calculator Features
+
+**Playtime Adjustment:**
+- Add hours to account for offline play or other clients
+- Use negative values to see what your indices would have been at earlier points in time
+- Both II and SI adjust automatically
+
+**Goal PP Prediction:**
+- Enter a target PP value
+- See estimated total playtime needed
+- Shows additional hours required beyond current playtime
+
+---
+
+## Project Structure
+
+```
+oii-plus/
+├── manifest.json          # Extension manifest (Manifest V3)
+├── scripts/
+│   ├── config.js          # Configuration and coefficients
+│   ├── calculator.js      # II and SI calculation logic
+│   ├── data-extractor.js  # Profile data extraction
+│   ├── ui.js              # UI element creation and styling
+│   └── content.js         # Main content script with injection logic
+├── styles/
+│   └── content.css        # Styles for injected profile elements
+├── popup/
+│   ├── popup.html         # Popup UI structure
+│   ├── popup.css          # Popup styling
+│   └── popup.js           # Popup logic and event handlers
+├── icons/                 # Extension icons (16, 32, 48, 128, 512)
+├── LICENSE                # MIT License
+└── README.md
+```
+
+---
+
+## Technical Details
+
+### Data Extraction
+- Primary: Parses `data-initial-data` attributes from page DOM
+- Fallback: Text parsing from visible page content
+- Uses MutationObserver for efficient detection of dynamic content loading
+
+### Injection Strategy
+- Waits for profile statistics container before injecting
+- DOM observer monitors for page re-renders and reinjects as needed
+- Handles Turbo navigation (osu!'s SPA framework)
+- Supports browser back/forward navigation
+
+### Popup Communication
+- Message passing between popup and content script via browser APIs
+- 500ms polling to detect profile changes automatically
+- Retry logic for content script readiness
+- Works with both Firefox (browser API) and Chrome (chrome API)
 
 ---
 
 ## Development
 
-### Project Structure
+### Prerequisites
+- Modern browser with extension developer mode
+- Git for version control
 
-```
-oii-plus/
-├── manifest.json        # Extension manifest (v3)
-├── scripts/
-│   └── content.js       # Content script - injects II on profiles
-├── styles/
-│   └── content.css      # Styles for injected elements
-├── popup/
-│   ├── popup.html       # Popup UI structure
-│   ├── popup.css        # Popup styles
-│   └── popup.js         # Popup logic
-├── icons/               # Extension icons
-├── LICENSE              # MIT License
-└── README.md
-```
-
-### Local Development
+### Setup
 
 ```bash
 git clone https://github.com/Yaetrna/oii-plus.git
 cd oii-plus
-# Load in browser (see Installation above)
-# Make changes, then reload the extension to test
 ```
 
-### Building
+Load the extension following the installation instructions above. After making changes, reload the extension to test.
 
-Firefox:
+### Building for Distribution
 
+**Firefox (.xpi):**
 ```bash
-zip -r oii-plus.xpi . -x "*.git*" -x "*.md"
+zip -r oii-plus.xpi . -x "*.git*" -x "*.md" -x "*.zip"
 ```
 
-Chrome:
-
+**Chrome (.zip):**
 ```bash
-zip -r oii-plus.zip . -x "*.git*"
+zip -r oii-plus.zip . -x "*.git*" -x "*.xpi"
 ```
 
 ---
@@ -147,24 +208,23 @@ zip -r oii-plus.zip . -x "*.git*"
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/something`)
-3. Commit changes (`git commit -m 'Add something'`)
-4. Push to branch (`git push origin feature/something`)
+2. Create a feature branch: `git checkout -b feature/description`
+3. Commit your changes: `git commit -m 'Add feature description'`
+4. Push to the branch: `git push origin feature/description`
 5. Open a Pull Request
 
 ---
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
+MIT License. See [LICENSE](LICENSE) file for details.
 
 ---
 
 ## Credits
 
-- Original concept by [ferryhmm](https://github.com/ferryhmm/oii)
-- ML model trained on 250,000+ players
+- Original concept: [ferryhmm/oii](https://github.com/ferryhmm/oii)
+- Data analysis and ML models: Yaetrna
+- Dataset: 134,953 osu! players with 250+ hours playtime
 
-<p align="center">
-  <sub>Not affiliated with osu! or ppy Pty Ltd</sub>
-</p>
+**Not affiliated with osu! or ppy Pty Ltd**
