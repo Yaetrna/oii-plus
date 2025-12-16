@@ -21,7 +21,7 @@
 
 ## Improvement Indicator (II)
 
-Measures activity efficiency — how many hits you accumulate per hour compared to the average player.
+Measures how many hits you accumulate per hour compared to the average player.
 
 $$\text{II} = \frac{\text{Expected Playtime}}{\text{Actual Playtime}}$$
 
