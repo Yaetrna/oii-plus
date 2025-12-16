@@ -3,6 +3,7 @@
 let currentUserData = null;
 let isInjecting = false;
 let lastInjectedUrl = null;
+let reinjectObserver = null;
 
 /**
  * Inject both II (Improvement Indicator) and SI (Skill Index) into the profile.
@@ -95,6 +96,40 @@ async function injectIndices(additionalPlaytimeHours = 0, forceRecreate = false)
 // Legacy alias
 function injectII(additionalPlaytimeHours = 0, forceRecreate = false) {
   return injectIndices(additionalPlaytimeHours, forceRecreate);
+}
+
+/**
+ * Observe the profile section for dynamic re-renders and reinject if needed.
+ */
+function setupDomObservers() {
+  // Clean previous observer
+  if (reinjectObserver) {
+    try { reinjectObserver.disconnect(); } catch {}
+  }
+
+  const target = document.querySelector('.profile-detail') || document.querySelector('.osu-layout') || document.body;
+  if (!target) return;
+
+  let scheduled = false;
+  reinjectObserver = new MutationObserver(() => {
+    // Only care on user profile pages
+    if (!/\/users\/\d+/.test(location.href)) return;
+
+    const ii = document.getElementById(oiiConfig.elementIds.iiElement);
+    const si = document.getElementById(oiiConfig.elementIds.siElement);
+    const container = oiiUI.findInjectionPoint();
+
+    // If container exists but our elements are missing, schedule reinjection
+    if (container && (!ii || !si) && !scheduled && !isInjecting) {
+      scheduled = true;
+      setTimeout(() => {
+        scheduled = false;
+        injectIndices(0, true);
+      }, 150);
+    }
+  });
+
+  reinjectObserver.observe(target, { childList: true, subtree: true });
 }
 
 /**
@@ -228,6 +263,7 @@ function init() {
   currentUserData = null;
   lastInjectedUrl = null;
   injectIndices(0);
+  setupDomObservers();
 }
 
 function setupNavigationObservers() {
@@ -237,6 +273,7 @@ function setupNavigationObservers() {
       currentUserData = null;
       lastInjectedUrl = null;
       setTimeout(() => injectIndices(0, true), oiiConfig.timing.navigationDelay);
+      setTimeout(() => setupDomObservers(), oiiConfig.timing.navigationDelay + 10);
     }
   });
   
@@ -245,6 +282,7 @@ function setupNavigationObservers() {
     if (/\/users\/\d+/.test(location.href)) {
       // Just remove old elements, injection will happen on turbo:load
       oiiUI.removeExisting();
+      setupDomObservers();
     }
   });
 
@@ -254,6 +292,7 @@ function setupNavigationObservers() {
       currentUserData = null;
       lastInjectedUrl = null;
       setTimeout(() => injectIndices(0, true), oiiConfig.timing.navigationDelay);
+      setTimeout(() => setupDomObservers(), oiiConfig.timing.navigationDelay + 10);
     }
   });
 
@@ -266,6 +305,7 @@ function setupNavigationObservers() {
         currentUserData = null;
         lastInjectedUrl = null;
         setTimeout(() => injectIndices(0, true), oiiConfig.timing.urlChangeDelay);
+        setTimeout(() => setupDomObservers(), oiiConfig.timing.urlChangeDelay + 10);
       }
     }
   }).observe(document.body, { childList: true, subtree: true });
