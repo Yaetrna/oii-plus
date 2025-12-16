@@ -48,10 +48,8 @@ async function injectIndices(additionalPlaytimeHours = 0, forceRecreate = false)
     
     // If no data yet, wait for data-initial-data to be available
     if (!userData) {
-      // Use a smarter wait that watches for the element
       userData = await waitForProfileData();
     }
-    
     if (!userData) return;
 
     const playtimeHours = userData.playTimeSeconds / 3600 + additionalPlaytimeHours;
@@ -72,17 +70,19 @@ async function injectIndices(additionalPlaytimeHours = 0, forceRecreate = false)
     // Track last injected URL
     lastInjectedUrl = location.href;
 
+    // Wait for a real injection container to avoid floating flicker
+    const injection = await waitForInjectionPoint(3000);
+
     oiiUI.removeExisting();
-    
+
     const iiElement = oiiUI.createIIElement(ii, playtimeHours);
     const siElement = oiiUI.createSIElement(si, playtimeHours);
-    
-    const injection = oiiUI.findInjectionPoint();
 
     if (injection) {
       injection.element.appendChild(iiElement);
       injection.element.appendChild(siElement);
     } else {
+      // Fallback only if container never appears in time
       iiElement.classList.add("oii-floating");
       siElement.classList.add("oii-floating");
       document.body.appendChild(iiElement);
@@ -119,8 +119,14 @@ function setupDomObservers() {
     const si = document.getElementById(oiiConfig.elementIds.siElement);
     const container = oiiUI.findInjectionPoint();
 
-    // If container exists but our elements are missing, schedule reinjection
-    if (container && (!ii || !si) && !scheduled && !isInjecting) {
+    // If container exists but our elements are missing OR not inside it, schedule reinjection
+    const needReinject = !!(container && (
+      !ii || !si ||
+      (ii && !container.element.contains(ii)) ||
+      (si && !container.element.contains(si))
+    ));
+
+    if (needReinject && !scheduled && !isInjecting) {
       scheduled = true;
       setTimeout(() => {
         scheduled = false;
@@ -130,6 +136,48 @@ function setupDomObservers() {
   });
 
   reinjectObserver.observe(target, { childList: true, subtree: true });
+}
+
+/**
+ * Wait for injection container to appear.
+ */
+function waitForInjectionPoint(maxWaitTime = 3000) {
+  return new Promise((resolve) => {
+    // Immediate check
+    const found = oiiUI.findInjectionPoint();
+    if (found) return resolve(found);
+
+    let resolved = false;
+    const start = Date.now();
+
+    const observer = new MutationObserver(() => {
+      if (resolved) return;
+      const foundNow = oiiUI.findInjectionPoint();
+      if (foundNow) {
+        resolved = true;
+        observer.disconnect();
+        resolve(foundNow);
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    const interval = setInterval(() => {
+      if (resolved) return clearInterval(interval);
+      const foundNow = oiiUI.findInjectionPoint();
+      if (foundNow) {
+        resolved = true;
+        observer.disconnect();
+        clearInterval(interval);
+        resolve(foundNow);
+      }
+      if (Date.now() - start > maxWaitTime) {
+        resolved = true;
+        observer.disconnect();
+        clearInterval(interval);
+        resolve(null);
+      }
+    }, 100);
+  });
 }
 
 /**
