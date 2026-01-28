@@ -105,7 +105,6 @@ $$\text{Expected PP} = c \times \text{Playtime}^d$$
 - **Calculator Popup** — Adjust playtime (positive or negative) to simulate scenarios
 - **Goal Prediction** — Estimate playtime needed to reach a target PP
 - **Live Detection** — Popup updates automatically when switching profiles
-- **Persistent Display** — Survives page re-renders and Turbo navigation
 
 ---
 
