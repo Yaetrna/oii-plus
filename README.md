@@ -86,9 +86,7 @@ $$\text{Expected PP} = c \times \text{Playtime}^d$$
 
 ### Firefox
 
-1. Open `about:debugging#/runtime/this-firefox`
-2. Click **Load Temporary Add-on**
-3. Select `manifest.json`
+1. [Download directly](https://addons.mozilla.org/en-US/firefox/addon/osu-improvement-indicator-plus/)
 
 ### Chrome / Edge / Brave
 
