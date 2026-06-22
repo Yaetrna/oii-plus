@@ -118,11 +118,8 @@ const oiiCalculator = {
   },
 
   // ==================== LEGACY COMPATIBILITY ====================
-  
-  getInterpretation(ii) { return this.getIIInterpretation(ii); },
-  getColor(ii) { return this.getIIColor(ii); },
-  
-  predictPlaytimeForGoal(totalHits, currentPP, goalPP, currentPlaytimeHours, mode) {
+
+    predictPlaytimeForGoal(totalHits, currentPP, goalPP, currentPlaytimeHours, mode) {
     if (currentPlaytimeHours <= 0 || totalHits <= 0) return Infinity;
     const currentII = this.calculateII(totalHits, currentPlaytimeHours, mode);
     if (currentII <= 0) return Infinity;

@@ -188,18 +188,10 @@ const oiiUI = {
     return true;
   },
 
-  // ==================== LEGACY / SHARED ====================
+  // ==================== SHARED ====================
 
-  createElement(ii, playtimeHours) {
-    return this.createIIElement(ii, playtimeHours);
-  },
-
-  updateElement(ii, playtimeHours) {
-    return this.updateIIElement(ii, playtimeHours);
-  },
-
-  findInjectionPoint() {
-    for (const selector of [
+    findInjectionPoint() {
+      for (const selector of [
       ".profile-detail__values--grid",
       ".profile-detail__values",
       ".profile-detail",
