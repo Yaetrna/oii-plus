@@ -1,62 +1,86 @@
 #!/bin/bash
-# oii+ packaging script
-# Creates distributable packages for Chrome and Firefox stores.
+# oii+ packaging script — Chrome (.zip) + Firefox (.xpi)
 #
-# Usage:
-#   bash scripts/package.sh
+# Usage:   bash scripts/package.sh
+# Run from anywhere — auto-resolves project root.
 #
-# Output in dist/:
-#   oii-plus-vX.Y.Z-chrome.zip   — Chrome / Edge / Brave / Opera
-#   oii-plus-vX.Y.Z-firefox.xpi  — Firefox (same content, .xpi extension)
-#
-# For Firefox AMO submission, you can also use web-ext:
-#   npx web-ext sign --api-key=... --api-secret=...
-# (Requires Mozilla Add-on Developer account)
+# Requires: zip (Unix) or tar + powershell (Windows git-bash)
 
 set -euo pipefail
+
+# ---- Resolve project root ----
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
+ROOT="$(pwd)"
 
 VERSION=$(grep '"version"' manifest.json | head -1 | sed 's/.*: "//; s/".*//')
 echo "==> Packaging oii+ v$VERSION ..."
 
-mkdir -p dist
+mkdir -p "$ROOT/dist"
 
-# Common exclude patterns for both targets
-EXCLUDES=(
-  "*.git*"
-  ".gitignore"
-  "node_modules/*"
-  "scripts/__tests__/*"
-  ".hermes/*"
-  "dist/*"
-  "*.md"
-  "package*"
-  "*.zip"
-  "*.xpi"
-)
+CHROME_ZIP="$ROOT/dist/oii-plus-v${VERSION}-chrome.zip"
+FIREFOX_XPI="$ROOT/dist/oii-plus-v${VERSION}-firefox.xpi"
+rm -f "$CHROME_ZIP" "$FIREFOX_XPI"
 
-EXCLUDE_ARGS=()
-for p in "${EXCLUDES[@]}"; do
-  EXCLUDE_ARGS+=(-x "$p")
-done
+# ---- Build staging directory with only wanted files ----
+STAGING="$ROOT/dist/_staging"
+rm -rf "$STAGING"
+mkdir -p "$STAGING"
 
-# Chrome / Edge / Brave / Opera — .zip
-CHROME_ZIP="dist/oii-plus-v${VERSION}-chrome.zip"
-rm -f "$CHROME_ZIP"
-zip -r "$CHROME_ZIP" . "${EXCLUDE_ARGS[@]}"
-echo "==> Created $CHROME_ZIP  ($(du -h "$CHROME_ZIP" | cut -f1))"
+echo "==> Collecting files ..."
 
-# Firefox — .xpi (same content, different extension)
-FIREFOX_XPI="dist/oii-plus-v${VERSION}-firefox.xpi"
-rm -f "$FIREFOX_XPI"
+# Copy everything, then prune
+cp -r "$ROOT"/* "$STAGING"/ 2>/dev/null || true
+cp "$ROOT"/.gitignore "$STAGING"/ 2>/dev/null || true
+
+# Remove excluded dirs/files from staging
+rm -rf \
+  "$STAGING/node_modules" \
+  "$STAGING/scripts/__tests__" \
+  "$STAGING/.hermes" \
+  "$STAGING/dist" \
+  "$STAGING/.git" \
+  "$STAGING/package.json" \
+  "$STAGING/package-lock.json" \
+  "$STAGING/CHANGELOG.md" \
+  "$STAGING/README.md" \
+  "$STAGING/LICENSE" \
+  "$STAGING/.gitignore" \
+  2>/dev/null || true
+
+# Remove any stray .zip/.xpi/.tar.gz leftovers
+find "$STAGING" -name '*.zip' -o -name '*.xpi' -o -name '*.tar.gz' | xargs rm -f 2>/dev/null || true
+
+# ---- Create .zip ----
+echo "==> Creating .zip ..."
+
+if command -v zip &>/dev/null; then
+  (cd "$STAGING" && zip -r "$CHROME_ZIP" .)
+elif command -v powershell.exe &>/dev/null; then
+  # Convert MSYS paths to Windows paths for PowerShell
+  STAGING_WIN=$(cygpath -w "$STAGING" 2>/dev/null || echo "$STAGING")
+  CHROME_ZIP_WIN=$(cygpath -w "$CHROME_ZIP" 2>/dev/null || echo "$CHROME_ZIP")
+  powershell.exe -Command \
+    "Compress-Archive -Path '$STAGING_WIN\\*' -DestinationPath '$CHROME_ZIP_WIN' -Force"
+else
+  echo "ERROR: Need 'zip' or 'powershell.exe'. On MSYS2: pacman -S zip"
+  exit 1
+fi
+
+echo "==> Created $CHROME_ZIP"
+
+# Firefox .xpi is identical content
 cp "$CHROME_ZIP" "$FIREFOX_XPI"
-echo "==> Created $FIREFOX_XPI  ($(du -h "$FIREFOX_XPI" | cut -f1))"
+echo "==> Created $FIREFOX_XPI"
+
+# Cleanup
+rm -rf "$STAGING"
 
 echo ""
-echo "Done. To install:"
-echo "  Chrome: chrome://extensions → Developer mode → Load unpacked"
+echo "Done (v$VERSION). To install:"
+echo "  Chrome: chrome://extensions → Dev mode → Load unpacked → select this folder"
 echo "  Firefox: about:debugging#/runtime/this-firefox → Load Temporary Add-on"
-echo "  Or submit to stores:"
-echo "    Chrome: https://chrome.google.com/webstore/devconsole"
-echo "    Firefox: https://addons.mozilla.org/en-US/developers/"
 echo ""
-echo "For signed Firefox add-on: npx web-ext sign (requires API keys)"
+echo "Submit to stores:"
+echo "  Chrome: $CHROME_ZIP"
+echo "  Firefox: $FIREFOX_XPI"
