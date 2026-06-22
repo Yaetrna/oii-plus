@@ -156,12 +156,24 @@ Load as unpacked extension, make changes, reload to test.
 ### Build
 
 ```bash
-# Firefox
-zip -r oii-plus.xpi . -x "*.git*" -x "*.md" -x "*.zip"
+# Chrome / Edge / Brave / Opera — produces .zip
+bash scripts/package.sh
 
-# Chrome
-zip -r oii-plus.zip . -x "*.git*" -x "*.xpi"
+# Firefox (optional — install web-ext for signing)
+# npm install -g web-ext
+# web-ext sign --api-key=... --api-secret=...
+
+# Output in dist/:
+#   oii-plus-v6.0.0-chrome.zip
+#   oii-plus-v6.0.0-firefox.xpi
 ```
+
+### Load Unpacked
+
+| Browser | URL | Steps |
+|---------|-----|-------|
+| Chrome / Edge / Brave | `chrome://extensions/` | Developer mode → **Load unpacked** → select folder |
+| Firefox | `about:debugging#/runtime/this-firefox` | **Load Temporary Add-on** → select `manifest.json`
 
 ---
 
