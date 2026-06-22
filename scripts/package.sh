@@ -61,7 +61,7 @@ elif command -v powershell.exe &>/dev/null; then
   STAGING_WIN=$(cygpath -w "$STAGING" 2>/dev/null || echo "$STAGING")
   CHROME_ZIP_WIN=$(cygpath -w "$CHROME_ZIP" 2>/dev/null || echo "$CHROME_ZIP")
   powershell.exe -Command \
-    "Import-Module Microsoft.PowerShell.Archive -ErrorAction SilentlyContinue; Compress-Archive -Path '$STAGING_WIN\\*' -DestinationPath '$CHROME_ZIP_WIN' -Force"
+    "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('$STAGING_WIN', '$CHROME_ZIP_WIN', 'Optimal', \$false)"
 else
   echo "ERROR: Need 'zip' or 'powershell.exe'. On MSYS2: pacman -S zip"
   exit 1
