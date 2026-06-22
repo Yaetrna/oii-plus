@@ -27,6 +27,6 @@ Desktop.ini
 *.log
 npm-debug.log*
 
-# Temporary files
-*.tmp
-*.temp
+dist/
+coverage/
+*.local.*

@@ -194,15 +194,11 @@ async function handleAdditionalPlaytimeChange(event) {
   }
 
   const response = await sendToContentScript({
-    type: "UPDATE_PLAYTIME",
+    type: "UPDATE_PLAYTIME_AND_GET_ALL",
     additionalPlaytimeHours: additionalHours,
   });
-  if (response.success) {
-    const dataResponse = await sendToContentScript({
-      type: "GET_CURRENT_DATA",
-    });
-    if (dataResponse.success && dataResponse.data) {
-      const { totalHits, playtimeHours, pp, mode } = dataResponse.data;
+  if (response.success && response.data) {
+    const { totalHits, playtimeHours, pp, mode } = response.data;
       const newPlaytime = playtimeHours + additionalHours;
 
       // Calculate adjusted II (using per-mode coefficients)

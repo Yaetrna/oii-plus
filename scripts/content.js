@@ -11,9 +11,7 @@ let reinjectObserver = null;
 async function injectIndices(additionalPlaytimeHours = 0, forceRecreate = false) {
   if (isInjecting) return;
 
-  oiiUI.addStyles();
-
-  const existingII = document.getElementById(oiiConfig.elementIds.iiElement);
+    const existingII = document.getElementById(oiiConfig.elementIds.iiElement);
   const existingSI = document.getElementById(oiiConfig.elementIds.siElement);
 
   // Update existing elements if possible (handles UPDATE_PLAYTIME adjustments)
@@ -179,17 +177,15 @@ function waitForInjectionPoint(maxWaitTime = 3000) {
  */
 function waitForProfileData(maxWaitTime = 3000) {
   return new Promise((resolve) => {
-    // First, try immediate extraction
     let userData = oiiDataExtractor.getData();
     if (userData?.pp && userData?.playTimeSeconds) {
       resolve(userData);
       return;
     }
-    
+
     const startTime = Date.now();
     let resolved = false;
-    
-    // Use MutationObserver to detect when data becomes available
+
     const observer = new MutationObserver(() => {
       if (resolved) return;
       userData = oiiDataExtractor.getData();
@@ -199,48 +195,21 @@ function waitForProfileData(maxWaitTime = 3000) {
         resolve(userData);
       }
     });
-    
-    observer.observe(document.body, { 
-      childList: true, 
+
+    observer.observe(document.body, {
+      childList: true,
       subtree: true,
       attributes: true,
       attributeFilter: ['data-initial-data']
     });
-    
-    // Also poll as fallback (for cases where mutation doesn't trigger)
-    const pollInterval = setInterval(() => {
-      if (resolved) {
-        clearInterval(pollInterval);
-        return;
-      }
-      
-      userData = oiiDataExtractor.getData();
-      if (userData?.pp && userData?.playTimeSeconds) {
-        resolved = true;
-        observer.disconnect();
-        clearInterval(pollInterval);
-        resolve(userData);
-        return;
-      }
-      
-      // Timeout
-      if (Date.now() - startTime > maxWaitTime) {
-        resolved = true;
-        observer.disconnect();
-        clearInterval(pollInterval);
-        resolve(null);
-      }
-    }, 100);
-    
-    // Hard timeout safety
+
     setTimeout(() => {
       if (!resolved) {
         resolved = true;
         observer.disconnect();
-        clearInterval(pollInterval);
         resolve(oiiDataExtractor.getData());
       }
-    }, maxWaitTime + 100);
+    }, maxWaitTime);
   });
 }
 
@@ -250,10 +219,31 @@ function setupMessageHandlers() {
   oiiBrowserAPI.runtime.onMessage.addListener(
     (request, sender, sendResponse) => {
       switch (request.type) {
-        case "UPDATE_PLAYTIME":
-          injectIndices(Number(request.additionalPlaytimeHours));
-          sendResponse({ success: true });
-          break;
+              case "UPDATE_PLAYTIME":
+                injectIndices(Number(request.additionalPlaytimeHours));
+                sendResponse({ success: true });
+                break;
+
+              case "UPDATE_PLAYTIME_AND_GET_ALL":
+                injectIndices(Number(request.additionalPlaytimeHours));
+                if (currentUserData) {
+                  const h = currentUserData.playtimeHours + Number(request.additionalPlaytimeHours);
+                  sendResponse({
+                    success: true,
+                    data: {
+                      username: currentUserData.username,
+                      pp: currentUserData.pp,
+                      totalHits: currentUserData.totalHits || 0,
+                      playtimeHours: h,
+                      mode: currentUserData.mode,
+                      ii: currentUserData.ii,
+                      si: currentUserData.si,
+                    },
+                  });
+                } else {
+                  sendResponse({ success: false, error: "No data" });
+                }
+                break;
 
         case "GET_PREDICTION":
           if (currentUserData) {
@@ -336,20 +326,6 @@ function setupNavigationObservers() {
       setTimeout(() => setupDomObservers(), oiiConfig.timing.navigationDelay + 10);
     }
   });
-
-  // Fallback: watch for URL changes via MutationObserver
-  let lastUrl = location.href;
-  new MutationObserver(() => {
-    if (location.href !== lastUrl) {
-      lastUrl = location.href;
-      if (/\/users\/\d+/.test(location.href)) {
-        currentUserData = null;
-        lastInjectedUrl = null;
-        setTimeout(() => injectIndices(0, true), oiiConfig.timing.urlChangeDelay);
-        setTimeout(() => setupDomObservers(), oiiConfig.timing.urlChangeDelay + 10);
-      }
-    }
-  }).observe(document.body, { childList: true, subtree: true });
 }
 
 setupMessageHandlers();

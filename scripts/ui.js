@@ -13,38 +13,6 @@ const oiiUI = {
     return parts.join(" ") || "0h";
   },
 
-  addStyles() {
-    if (document.getElementById(oiiConfig.elementIds.styles)) return;
-    const style = document.createElement("style");
-    style.id = oiiConfig.elementIds.styles;
-    style.textContent = `
-      .profile-detail__values--grid{grid-template-columns:repeat(6,1fr)!important}
-      .profile-detail__values{gap:12px}
-      .oii-index{position:relative}
-      .oii-index .value-display__value{transition:all .2s ease}
-      .oii-index:hover .value-display__value{filter:brightness(1.2)}
-      .oii-tooltip{visibility:hidden;opacity:0;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:hsl(var(--hsl-b2,260 10% 15%));border:1px solid hsl(var(--hsl-b4,260 10% 30%));border-radius:6px;padding:10px 12px;width:max-content;max-width:280px;z-index:1000;transition:opacity .2s,visibility .2s;pointer-events:none;margin-bottom:8px;box-shadow:0 4px 12px rgba(0,0,0,.4)}
-      .oii-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:hsl(var(--hsl-b4,260 10% 30%))}
-      .oii-index:hover .oii-tooltip{visibility:visible;opacity:1}
-      .oii-tooltip__title{font-weight:700;font-size:13px;color:hsl(var(--hsl-c1,0 0% 100%));margin-bottom:6px}
-      .oii-tooltip__desc{font-size:11px;color:hsl(var(--hsl-c2,0 0% 70%));margin-bottom:8px}
-      .oii-tooltip__legend{font-size:10px;color:hsl(var(--hsl-c2,0 0% 70%));line-height:1.8}
-      .oii-tooltip__legend-item{display:flex;gap:8px;align-items:center}
-      .oii-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:0 0 4px currentColor}
-      .oii-dot--ii-5{background:linear-gradient(135deg,#7fff00,#32cd32);box-shadow:0 0 6px #7fff00}
-      .oii-dot--ii-4{background:linear-gradient(135deg,#adff2f,#9acd32);box-shadow:0 0 5px #adff2f}
-      .oii-dot--ii-3{background:linear-gradient(135deg,#ffd700,#ffa500);box-shadow:0 0 5px #ffd700}
-      .oii-dot--ii-2{background:linear-gradient(135deg,#ff8c00,#ff6347);box-shadow:0 0 5px #ff8c00}
-      .oii-dot--ii-1{background:linear-gradient(135deg,#ff4500,#dc143c);box-shadow:0 0 5px #ff4500}
-      .oii-dot--si-6{background:linear-gradient(135deg,#00ffff,#00bfff);box-shadow:0 0 6px #00ffff}
-      .oii-dot--si-5{background:linear-gradient(135deg,#1e90ff,#4169e1);box-shadow:0 0 5px #1e90ff}
-      .oii-dot--si-4{background:linear-gradient(135deg,#6a5acd,#7b68ee);box-shadow:0 0 5px #6a5acd}
-      .oii-dot--si-3{background:linear-gradient(135deg,#9370db,#8a2be2);box-shadow:0 0 5px #9370db}
-      .oii-dot--si-2{background:linear-gradient(135deg,#ba55d3,#9932cc);box-shadow:0 0 5px #ba55d3}
-      .oii-dot--si-1{background:linear-gradient(135deg,#da70d6,#ff69b4);box-shadow:0 0 5px #da70d6}`;
-    document.head.appendChild(style);
-  },
-
   // ==================== IMPROVEMENT INDICATOR (II) ====================
 
   createIITooltip_() {
