@@ -10,32 +10,25 @@ let reinjectObserver = null;
  */
 async function injectIndices(additionalPlaytimeHours = 0, forceRecreate = false) {
   if (isInjecting) return;
-  
-  // Prevent duplicate injection for same URL
-  const currentUrl = location.href;
-  if (!forceRecreate && lastInjectedUrl === currentUrl && currentUserData) {
-    const existingII = document.getElementById(oiiConfig.elementIds.iiElement);
-    const existingSI = document.getElementById(oiiConfig.elementIds.siElement);
-    if (existingII && existingSI) return;
-  }
 
   oiiUI.addStyles();
-  
+
   const existingII = document.getElementById(oiiConfig.elementIds.iiElement);
   const existingSI = document.getElementById(oiiConfig.elementIds.siElement);
 
-  // Update existing elements if possible
+  // Update existing elements if possible (handles UPDATE_PLAYTIME adjustments)
   if (!forceRecreate && currentUserData && existingII && existingSI) {
     const playtimeHours = currentUserData.playtimeHours + additionalPlaytimeHours;
     const ii = oiiCalculator.calculateII(currentUserData.totalHits, playtimeHours, currentUserData.mode);
     const si = oiiCalculator.calculateSI(currentUserData.pp, playtimeHours, currentUserData.mode);
-    
+
     currentUserData.ii = ii;
     currentUserData.si = si;
-    
-    const iiUpdated = oiiUI.updateIIElement(ii, playtimeHours);
-    const siUpdated = oiiUI.updateSIElement(si, playtimeHours);
-    if (iiUpdated && siUpdated) return;
+    currentUserData.additionalPlaytimeHours = additionalPlaytimeHours;
+
+    oiiUI.updateIIElement(ii, playtimeHours);
+    oiiUI.updateSIElement(si, playtimeHours);
+    return;
   }
 
   isInjecting = true;

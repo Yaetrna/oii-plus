@@ -28,6 +28,21 @@ function formatGameMode(mode) {
   return modes[mode] || mode;
 }
 
+// Coefficient lookup matching scripts/config.js
+// Keep these in sync when tuning the model
+const POPUP_II_COEFFS = {
+  osu: { a: 0.000734, b: 0.8555 },
+  taiko: { a: 0.000680, b: 0.8600 },
+  fruits: { a: 0.000620, b: 0.8650 },
+  mania: { a: 0.000580, b: 0.8700 },
+};
+const POPUP_SI_COEFFS = {
+  osu: { c: 226.4153, d: 0.4878 },
+  taiko: { c: 200.0, d: 0.50 },
+  fruits: { c: 180.0, d: 0.52 },
+  mania: { c: 160.0, d: 0.54 },
+};
+
 function getIIColor(ii) {
   if (ii <= 0) return "#888";
   if (ii >= 2) return "hsl(120, 100%, 45%)";
@@ -47,22 +62,21 @@ async function sendToContentScript(message, retries = 2) {
       currentWindow: true,
     });
     if (!tab) return { success: false, error: "No active tab found" };
-    
+
     // Check URL - handle both with and without URL access
     const url = tab.url || tab.pendingUrl || "";
-    const isOsuProfile = url.includes("osu.ppy.sh/users/") || 
+    const isOsuProfile = url.includes("osu.ppy.sh/users/") ||
                          /\/users\/\d+/.test(url);
     if (!isOsuProfile && url) {
       return { success: false, error: "Not on an osu! profile page" };
     }
-    
+
     // Try to send message with retry logic for cases where content script isn't ready
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         const response = await browserAPI.tabs.sendMessage(tab.id, message);
         if (response) return response;
       } catch (e) {
-        // Content script might not be ready yet, wait and retry
         if (attempt < retries) {
           await new Promise(r => setTimeout(r, 300));
           continue;
@@ -72,7 +86,6 @@ async function sendToContentScript(message, retries = 2) {
     }
     return { success: false, error: "No response from content script" };
   } catch (error) {
-    // Handle common errors
     if (error.message?.includes("Receiving end does not exist")) {
       return { success: false, error: "Content script not loaded. Try refreshing the page." };
     }
@@ -84,7 +97,7 @@ function getSIColor(si) {
   if (si <= 0) return "#888";
   const minSI = 0.3, maxSI = 3.0;
   const clamped = Math.max(minSI, Math.min(maxSI, si));
-  
+
   let hue;
   if (clamped <= 1.0) {
     const t = (clamped - minSI) / (1.0 - minSI);
@@ -191,10 +204,11 @@ async function handleAdditionalPlaytimeChange(event) {
     if (dataResponse.success && dataResponse.data) {
       const { totalHits, playtimeHours, pp, mode } = dataResponse.data;
       const newPlaytime = playtimeHours + additionalHours;
-      
-      // Calculate adjusted II
+
+      // Calculate adjusted II (using per-mode coefficients)
       if (totalHits > 0 && newPlaytime > 0) {
-        const expectedPlaytime = 0.000545 * Math.pow(totalHits, 0.8737);
+        const iiCoef = POPUP_II_COEFFS[mode] || POPUP_II_COEFFS.osu;
+        const expectedPlaytime = iiCoef.a * Math.pow(totalHits, iiCoef.b);
         const adjustedII = expectedPlaytime / newPlaytime;
         const sign = additionalHours > 0 ? '+' : '';
         showAdjustedII(
@@ -202,10 +216,11 @@ async function handleAdditionalPlaytimeChange(event) {
           "highlight"
         );
       }
-      
-      // Calculate adjusted SI
+
+      // Calculate adjusted SI (using per-mode coefficients)
       if (pp > 0 && newPlaytime > 0) {
-        const expectedPP = 226.4153 * Math.pow(newPlaytime, 0.4878); // osu standard
+        const siCoef = POPUP_SI_COEFFS[mode] || POPUP_SI_COEFFS.osu;
+        const expectedPP = siCoef.c * Math.pow(newPlaytime, siCoef.d);
         const adjustedSI = pp / expectedPP;
         const sign = additionalHours > 0 ? '+' : '';
         showAdjustedSI(
@@ -276,10 +291,8 @@ function setupProfileChangeDetection() {
     if (response.success && response.data) {
       const currentUsername = response.data.username;
       if (lastUsername && lastUsername !== currentUsername) {
-        // Profile changed, refresh entire display
         showStatsView();
         updateStatsDisplay(response.data);
-        // Reset adjustment inputs
         document.getElementById("additionalPlaytime").value = "0";
         document.getElementById("goalPP").value = "";
         hideAdjustedII();
@@ -290,7 +303,6 @@ function setupProfileChangeDetection() {
     }
   };
 
-  // Check every 500ms for profile changes
   setInterval(checkProfile, 500);
 }
 
@@ -305,15 +317,6 @@ async function init() {
     "https://osu.ppy.sh/users/13910074",
     "https://osu.ppy.sh/users/7388142",
     "https://osu.ppy.sh/users/20726353",
-    "https://osu.ppy.sh/users/16363979",
-    "https://osu.ppy.sh/users/30556250",
-    "https://osu.ppy.sh/users/11862201",
-    "https://osu.ppy.sh/users/11705938",
-    "https://osu.ppy.sh/users/14661718",
-    "https://osu.ppy.sh/users/15840146",
-    "https://osu.ppy.sh/users/16523449",
-    "https://osu.ppy.sh/users/13223964",
-    "https://osu.ppy.sh/users/14457718",
   ];
 
   const randomLink = document.getElementById("randomProfileLink");
@@ -347,7 +350,6 @@ async function init() {
     if (e.key === "Escape") window.close();
   });
 
-  // Start periodic profile change detection
   setupProfileChangeDetection();
 }
 

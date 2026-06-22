@@ -42,12 +42,16 @@ const oiiDataExtractor = {
       ? parseInt((ppMatch[1] || ppMatch[2]).replace(/,/g, ""))
       : null;
 
-    const timeMatch = pageText.match(/(\d+)d\s*(\d+)h\s*(\d+)m/);
-    const playTimeSeconds = timeMatch
-      ? (parseInt(timeMatch[1]) || 0) * 86400 +
-        (parseInt(timeMatch[2]) || 0) * 3600 +
-        (parseInt(timeMatch[3]) || 0) * 60
-      : null;
+    // Match playtime in any format: Xd Yh Zm, Yh Zm, Zm, Xd, Xd Yh, etc.
+        const dMatch = pageText.match(/(\d+)\s*d\b/);
+        const hMatch = pageText.match(/(\d+)\s*h\b/);
+        const mMatch = pageText.match(/(\d+)\s*m\b/);
+        const days = dMatch ? parseInt(dMatch[1]) : 0;
+        const hours = hMatch ? parseInt(hMatch[1]) : 0;
+        const minutes = mMatch ? parseInt(mMatch[1]) : 0;
+        const playTimeSeconds = (days || hours || minutes)
+          ? days * 86400 + hours * 3600 + minutes * 60
+          : null;
 
     const hitsMatch = pageText.match(/Total\s*Hits\s*([0-9,]+)/i);
     const totalHits = hitsMatch ? parseInt(hitsMatch[1].replace(/,/g, "")) : 0;

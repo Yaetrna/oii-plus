@@ -9,10 +9,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "oii-plus@yaetrna.dev",
-      "strict_min_version": "109.0",
-      "data_collection_permissions": {
-        "required": ["none"]
-      }
+      "strict_min_version": "109.0"
     }
   },
 
@@ -48,7 +45,7 @@
         "scripts/ui.js",
         "scripts/content.js"
       ],
-      "css": ["styles/content.css"],
+      "css": [],
       "run_at": "document_end"
     }
   ],
