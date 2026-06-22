@@ -56,12 +56,21 @@ echo "==> Creating .zip ..."
 
 if command -v zip &>/dev/null; then
   (cd "$STAGING" && zip -r "$CHROME_ZIP" .)
-elif command -v powershell.exe &>/dev/null; then
-  # Convert MSYS paths to Windows paths for PowerShell
+elif command -v python &>/dev/null; then
+  # Convert MSYS paths to Windows paths first
   STAGING_WIN=$(cygpath -w "$STAGING" 2>/dev/null || echo "$STAGING")
   CHROME_ZIP_WIN=$(cygpath -w "$CHROME_ZIP" 2>/dev/null || echo "$CHROME_ZIP")
-  powershell.exe -Command \
-    "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('$STAGING_WIN', '$CHROME_ZIP_WIN', 'Optimal', \$false)"
+  python -c "
+import os, zipfile, pathlib
+staging = str(pathlib.Path(r'$STAGING_WIN'))
+dest = str(pathlib.Path(r'$CHROME_ZIP_WIN'))
+with zipfile.ZipFile(dest, 'w', zipfile.ZIP_DEFLATED) as zf:
+    for root, _, files in os.walk(staging):
+        for f in files:
+            full = os.path.join(root, f)
+            rel = os.path.relpath(full, staging).replace(chr(92), '/')
+            zf.write(full, rel)
+"
 else
   echo "ERROR: Need 'zip' or 'powershell.exe'. On MSYS2: pacman -S zip"
   exit 1
