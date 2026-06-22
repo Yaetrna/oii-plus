@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "osu! Improvement Indicator Plus",
-  "version": "7.0.0",
+  "version": "8.0.0",
   "description": "An ML-powered improvement indicator for osu! profiles. Uses Total Hits for 96% accurate predictions.",
   "author": "Yaetrna",
   "homepage_url": "https://github.com/Yaetrna/oii-plus",
