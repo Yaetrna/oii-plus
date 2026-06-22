@@ -159,16 +159,17 @@ const oiiUI = {
   // ==================== SHARED ====================
 
     findInjectionPoint() {
-      for (const selector of [
-      ".profile-detail__values--grid",
-      ".profile-detail__values",
-      ".profile-detail",
-    ]) {
-      const el = document.querySelector(selector);
-      if (el) return { element: el, position: "append" };
-    }
-    return null;
-  },
+        for (const selector of [
+          ".profile-detail-stats__values--grid",
+          ".profile-detail-stats__values",
+          ".profile-detail-stats",
+          ".profile-detail",
+        ]) {
+          const el = document.querySelector(selector);
+          if (el) return { element: el, position: "append" };
+        }
+        return null;
+      },
 
   removeExisting() {
     document.querySelectorAll(`#${oiiConfig.elementIds.iiElement}`).forEach((el) => el.remove());

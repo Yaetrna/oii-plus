@@ -319,7 +319,17 @@ async function init() {
     randomLink.href =
       profileLinks[Math.floor(Math.random() * profileLinks.length)];
 
-  const response = await sendToContentScript({ type: "GET_CURRENT_DATA" });
+  // Try a few times with delay (content script may still be loading)
+  let response = await sendToContentScript({ type: "GET_CURRENT_DATA" });
+  if (!response.success) {
+    await new Promise(r => setTimeout(r, 500));
+    response = await sendToContentScript({ type: "GET_CURRENT_DATA" });
+  }
+  if (!response.success) {
+    await new Promise(r => setTimeout(r, 500));
+    response = await sendToContentScript({ type: "GET_CURRENT_DATA" });
+  }
+
   if (response.success && response.data) {
     showStatsView();
     updateStatsDisplay(response.data);

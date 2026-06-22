@@ -2,10 +2,10 @@
 /* These load automatically via manifest.json content_scripts > css */
 
 /* ==================== GRID OVERRIDES ==================== */
-.profile-detail__values--grid {
+.profile-detail-stats__values--grid {
   grid-template-columns: repeat(6, 1fr) !important;
 }
-.profile-detail__values {
+.profile-detail-stats__values {
   gap: 12px;
 }
 
