@@ -198,7 +198,7 @@ async function handleAdditionalPlaytimeChange(event) {
     additionalPlaytimeHours: additionalHours,
   });
   if (response.success && response.data) {
-    const { totalHits, playtimeHours, pp, mode } = response.data;
+      const { totalHits, playtimeHours, pp, mode } = response.data;
       const newPlaytime = playtimeHours + additionalHours;
 
       // Calculate adjusted II (using per-mode coefficients)
@@ -226,7 +226,6 @@ async function handleAdditionalPlaytimeChange(event) {
       }
     }
   }
-}
 
 async function handleGoalPPChange(event) {
   const goalPP = parseFloat(event.target.value) || 0;
