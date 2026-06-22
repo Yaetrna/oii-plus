@@ -40,6 +40,7 @@ rm -rf \
   "$STAGING/.hermes" \
   "$STAGING/dist" \
   "$STAGING/.git" \
+  "$STAGING/pages" \
   "$STAGING/package.json" \
   "$STAGING/package-lock.json" \
   "$STAGING/CHANGELOG.md" \
